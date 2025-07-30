@@ -61,7 +61,6 @@ nautipi/
 │   ├── main.py
 │   ├── logging.py
 │   ├── metrics.py
-│   ├── ntp_check.py
 │   ├── migrations/
 │   │   └── (YAML-Schema-Migrations)
 │   ├── pyproject.toml         # Poetry für Reproducibility
@@ -134,16 +133,11 @@ Das Backend wird in **Python** umgesetzt, da Python Standard auf Raspberry Pi OS
 
 * **Security & Deployment:**
 
-  * **TLS/HTTPS**: Reverse Proxy (Caddy oder nginx) mit Zertifikatsgenerierung
-  * **Auth**: Login via OAuth2/JWT oder lokaler User (PAM), Userverwaltung im WebUI
-  * **Firewall (ufw) & Fail2Ban**: Presets & Aktivierung im Install-Skript
+  * **Auth**: lokaler User (PAM)
   * **Secrets-Vault:** Passwords/Keys werden in einem verschlüsselten File gespeichert (Age/SOPS), nie im YAML
-  * **SBOM:** Generierung einer CycloneDX-Software-BOM (SBOM) in der CI für spätere Supply-Chain-Audits
   * **OTA/Self-Updates:** Rolling Release via GitHub Releases, rsync-Delta-Updates (Fallback auf Full Download, Checksummen + Minisign-Signatur)
   * **Logging:** structlog, Ringbuffer (Loki-Style) für persistente Logs, Download-Button im WebUI
   * **Metrics:** `/metrics`-Endpoint für Prometheus/Alerting an Bord
-  * **NTP Drift Check:** Zeitdrift-Kontrolle (mit optionalem GPS-Zeit-Source)
-  * **Backup/Restore-Assistent:** Für SD-Card-Crash/Migration auf neuen Pi per rsync/Snapshot
 
 * **Installation als Service (systemd):**
 
@@ -177,13 +171,9 @@ Für die WebUI kommt **SvelteKit** zum Einsatz:
 * Service-Installations- und Verwaltungsoberfläche (mit Plugin-Unterstützung und Migrationstools)
 * Konfigurationseditor pro Service (YAML-Deskriptor steuert, welche Optionen editierbar sind, Validation und Migrations-Layer)
 * Zentrale Log-Ansicht (Ringbuffer, Live Logtail via WebSocket, Download für Support)
-* Nutzerverwaltung, Rechteverwaltung
 * Self-Update-Button, Anzeige Systemstatus
-* Backup-/Restore-Assistent für schnellen Pi-Wechsel
 * Metrics/Health-Status im Dashboard
-* Markdown-Doku und automatisch generierte Diagramme (Mermaid, OpenAPI Redocly/Swagger) direkt in der WebUI
 * Plugin-Galerie: Drittanbieter können ihre Service-YAMLs bereitstellen, die über das WebUI importiert werden
-* Plugin-Cookbook und Hello-World-Plugin als Doku-Beispiel
 
 ---
 
@@ -198,16 +188,11 @@ Für die WebUI kommt **SvelteKit** zum Einsatz:
 
 ## 🔒 6. Security & Updates
 
-* **TLS/HTTPS** standardmäßig aktiviert (Caddy/nginx Reverse Proxy)
-* **Login/Authentifizierung** (OAuth2/JWT, PAM-Login optional, Userverwaltung im WebUI)
-* **Firewall (ufw) & Fail2Ban** werden im Install-Skript vorkonfiguriert und aktiviert
+* **Login/Authentifizierung** PAM-Login
 * **OTA/Self-Updates** via GitHub Releases und Self-Update-Button im WebUI (rolling release, rsync-delta, Checksummen-Validierung, Minisign)
 * **Log- und Fehleranalyse:** structlog, Ringbuffer für persistente Logs, zentrale Ansicht im WebUI, Logtail live via WebSocket
-* **Backup/Restore:** Einfacher Assistent zur Sicherung und Wiederherstellung der Konfiguration und Nutzdaten (SD-Card Crash/Migration)
 * **Secrets-Vault:** SOPS/Age für verschlüsselte Speicherung sensibler Daten, niemals im Klartext im YAML
-* **SBOM:** CycloneDX-Software-BOM (SBOM) wird während der CI gebaut
 * **Metrics:** Prometheus-Endpoint `/metrics`
-* **NTP-Drift-Check:** Optionales Feature für präzise Bordzeit (auch über GPS)
 
 ---
 
@@ -224,7 +209,6 @@ curl -sSL https://github.com/youruser/NautiPi/raw/main/setup/install.sh | bash
 * Systemd-Service eingerichtet und startet automatisch
 * TLS/HTTPS direkt im Setup aktiviert, Zugangsdaten im Wizard vergeben
 * Firewall und Fail2Ban mit sicheren Presets aktiviert
-* Backup-/Restore-Optionen, Vault für Secrets wird initialisiert
 
 ---
 
@@ -234,13 +218,9 @@ curl -sSL https://github.com/youruser/NautiPi/raw/main/setup/install.sh | bash
 * Installationsskript ausführen
 * Hotspot automatisch gestartet → Verbindung herstellen
 * Wizard via WebUI führt User durch:
-
   * WLAN konfigurieren
   * SSH/FTP aktivieren
   * Nutzer & Passwörter setzen
-  * Firewall-Status & TLS-Zugang prüfen
-  * NTP-Dienst prüfen, optional GPS-Zeitquelle aktivieren
-  * Backup einrichten
 * Hotspot deaktiviert, IP & Zugangsdaten werden angezeigt
 * Services via WebUI installieren, verwalten & konfigurieren (inkl. Plugins)
 * Zentrale Verwaltung, Updates und Logauswertung direkt im WebUI
@@ -263,14 +243,14 @@ curl -sSL https://github.com/youruser/NautiPi/raw/main/setup/install.sh | bash
 ---
 
 ## ✅ 10. Zusammenfassung der ausgewählten Technologien:
-
+ 
 | Bereich         | Technologie                            | Gründe                                               |
 | --------------- | -------------------------------------- | ---------------------------------------------------- |
 | Backend         | Python + FastAPI + Poetry              | Schlank, performant, REST/API-unterstützt            |
 | Web Frontend    | SvelteKit + TailwindCSS + PWA          | Einfach, modern, wartbar, wenig Overhead             |
 | Konfiguration   | YAML + Schema-Validation + Migration   | Klar, minimalistisch, fehlertolerant, update-sicher  |
 | Installation    | Shellskript                            | Einfach, minimalistisch, wartungsfreundlich          |
-| Sicherheit      | TLS/HTTPS, Firewall, Auth, Vault, SBOM | Sichere und nachvollziehbare Basis                   |
+| Sicherheit      | Auth, Vault                            | Sichere und nachvollziehbare Basis                   |
 | Logging         | structlog, Ringbuffer, Web-Logtail     | Schnelle Fehlersuche, Support                        |
 | Erweiterbarkeit | Plugins via Entry Points & YAML        | Schnell und ohne Core-Fork erweiterbar               |
 | CI/CD           | GitHub Actions, Pre-commit, SBOM       | Zuverlässig, nachvollziehbar, contributor-freundlich |
