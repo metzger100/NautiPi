@@ -291,25 +291,3 @@ POST /api/selfupdate
 GET /metrics
 ```
 
----
-
-## 🗂️ 12. Versionsverwaltung und Continuous Integration:
-
-* GitHub als Repository
-* GitHub Actions für automatisierte Builds, Releases, Tests, Linting und Schema-Validierung
-* Automatische Dokumentations- und Diagrammgenerierung aus Code & YAML (Mermaid, Redocly, SBOM)
-* Pre-commit-Hooks und pyproject-tasks für Coding-Style und automatisierte Aufgaben
-
----
-
-## 🎯 Fazit & Empfehlung:
-
-Mit NautiPi erhältst du ein effizientes, modernes und hochgradig flexibles Managementsystem für deinen Marine-Bordcomputer auf Raspberry Pi Basis.
-Durch das Plugin-Modell, die durchdachte Sicherheit, Migrations-Layer, Backup/Restore, Metrics und eine konsistente API/WebUI sowie die Automatisierung von Validierung, Updates und Dokumentation wird NautiPi sowohl für Endanwender als auch für Entwickler die neue Basis für Innovation auf See!
-
----
-
-### 🌊 Du willst loslegen?
-
-**Raspberry Pi OS Lite flashen, Einzeiler ausführen, ablegen, lossegeln.**
-NautiPi macht Bord-IT wirklich einfach!
