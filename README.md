@@ -1,5 +1,7 @@
 # 🌊 **NautiPi – Das zentrale Software-Management für deinen Raspberry Pi Bordcomputer**
 
+---
+
 ## Was ist NautiPi und warum ist es wichtig?
 
 **NautiPi** ist die universelle, benutzerfreundliche Schaltzentrale für den Raspberry Pi als Bordcomputer auf Segel- und Motorbooten. Mit NautiPi kann jeder – egal ob Technikprofi oder Freizeitsegler – den Raspberry Pi auf einfache Weise als Herzstück der Bordelektronik nutzen, verwalten und jederzeit flexibel erweitern.
@@ -198,5 +200,25 @@ curl -sSL https://github.com/youruser/NautiPi/raw/main/setup/install.sh | bash
 * Plugin-Cookbook (Hello-World-Plugin) als Doku-Vorlage
 * GitHub-Wiki oder GitHub-Pages
 * **Automatische Dokumentation** aus API & YAML (Markdown, Mermaid, Redocly)
+
+---
+
+## 🌐 Einbettung in die Open‑Source‑Bootsoftware‑Szene
+
+NautiPi positioniert sich bewusst als leichtgewichtiges, webbasiertes Management‑Framework für Raspberry Pi Bordcomputer — mit klarem Fokus auf moderne Webtechnologien wie SignalK und AvNav. Im Vergleich zu etablierten Systemen wie OpenPlotter oder Bareboat (BBN) OS verzichtet NautiPi auf eine klassische Desktop‑GUI oder Chartplotter‑Frontends und bietet stattdessen eine modulare WebUI zur einfachen Installation, Konfiguration und Verwaltung von Services.
+
+Während OpenPlotter und BBN OS vollwertige Betriebssystem‑Images liefern, inklusive grafikbasierter Nutzeroberfläche, Chartplotter (z. B. OpenCPN), Medienwiedergabe und umfangreicher Hardware‑Integration, zielt NautiPi auf Anwender und Entwickler, die eine schlanke, headless oder hotspot‑basierte Lösung im Browser nutzen möchten.
+
+NautiPi ergänzt die Szene ideal als **modularer Boot-Service‑Manager**, als Alternative für User, die sich auf Netzwerk‑basierte Dienste konzentrieren und auf aufwändige GUIs/feste Displays verzichten möchten.
+
+---
+
+### 🔍 Übersicht: NautiPi im Vergleich zum Open Source Umfeld
+
+| **System / Projekt**       | **Art / Fokus**                             | **GUI‑Typ**                    | **SignalK & AvNav**                                                                      |
+| -------------------------- | ------------------------------------------- | ------------------------------ | -----------------------------------------------------------------------------------------|
+| **NautiPi**                | Web‑basiertes Framework                     | WebUI / Wizard (Headless)      | Integriert via YAML‑Services                                                             |
+| **OpenPlotter**            | Komplettes Raspberry Pi OS‑Image für Marine | Desktop‑GUI (X‑Server)         | Unterstützt via Plugins                                                                  ||
+| **Bareboat (BBN) OS**      | Linux‑Distro mit Fokus auf Bootscomputer    | Desktop‑GUI + Touchscreen      | SignalK & AvNav vorinstalliert                                                           |
 
 ---
