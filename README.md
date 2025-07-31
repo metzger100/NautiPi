@@ -1,10 +1,10 @@
-# 🌊 **NautiPi – Das zentrale Software-Management für deinen Raspberry Pi Bordcomputer**
+# 🌊 **NautiPi – Das zentrale Software-Management für deinen Webbasierten Raspberry Pi Bordcomputer**
 
 ---
 
 ## Was ist NautiPi und warum ist es wichtig?
 
-**NautiPi** ist die universelle, benutzerfreundliche Schaltzentrale für den Raspberry Pi als Bordcomputer auf Segel- und Motorbooten. Mit NautiPi kann jeder – egal ob Technikprofi oder Freizeitsegler – den Raspberry Pi auf einfache Weise als Herzstück der Bordelektronik nutzen, verwalten und jederzeit flexibel erweitern.
+**NautiPi** ist die universelle, benutzerfreundliche Schaltzentrale für den Raspberry Pi als Webbasierten Bordcomputer auf Segel- und Motorbooten. Mit NautiPi kann jeder – egal ob Technikprofi oder Freizeitsegler – den Raspberry Pi auf einfache Weise als Herzstück der Bordelektronik nutzen, verwalten und jederzeit flexibel erweitern. NautiPi legt dabei starken Fokus auf Webbasierte Anwendungen ohne Linux Desktop. Die Oberflächen sind über den Browser bedienbar und es muss kein festes Display und keine Eingabegeräte wie Maus und Tastatur fest am Pi montiert sein.
 
 Viele Bootscrews möchten heute die Vorteile der Digitalisierung nutzen: Navigation, Sensordaten, Wetter, Musik und mehr – alles möglichst einfach, modular und unabhängig von proprietären Komplettlösungen. Hier setzt NautiPi an:
 
