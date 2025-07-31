@@ -135,7 +135,7 @@ GET /metrics
 * **Installation als Service (systemd):**
 
   * Automatische Einrichtung bei Installation
-  * Self-Update-Mechanismus über GitHub Releases
+  * Self-Update-Mechanismus
 
 ---
 
@@ -154,13 +154,13 @@ Für die WebUI kommt **SvelteKit** zum Einsatz:
 * Step-by-Step Onboarding/Wizard (WLAN, Hotspot, User, SSH, Updates…)
 * Service-Installations- und Verwaltungsoberfläche (mit Plugin-Unterstützung)
 * Konfigurationseditor pro Service (YAML-Deskriptor steuert, welche Optionen editierbar sind)
-* Zentrale Log-Ansicht (Systemd-Logs via Tail auslesen, Download für Support)
+* (Keine Prio) Zentrale Log-Ansicht (Systemd-Logs via Tail auslesen, Download für Support)
 * Self-Update-Button
-* Plugins: Drittanbieter können ihre Service-YAMLs bereitstellen, die über das WebUI importiert und angezeigt werden
+* (Keine Prio) Plugins: Drittanbieter können ihre Service-YAMLs bereitstellen, die über das WebUI importiert und angezeigt werden
 
 ---
 
-## 🗄️ Plugins & Erweiterbarkeit
+## 🗄️ Plugins & Erweiterbarkeit (Keine Prio)
 
 * Services sind als YAML-Deskriptoren modular integriert (nativ oder Drittanbieter/Plugins)
 * Plugins können von Drittentwicklern einfach bereitgestellt, importiert und direkt im WebUI aktiviert werden.
@@ -170,7 +170,7 @@ Für die WebUI kommt **SvelteKit** zum Einsatz:
 
 ## 🔒 Security & Updates
 
-* **Login/Authentifizierung** PAM-Login
+* **Login/Authentifizierung** lokaler User (eventuell PAM-Login)
 * **OTA/Self-Updates** git pull und restart
 * **Log- und Fehleranalyse:** systemd logs via tail und Download für support
 
