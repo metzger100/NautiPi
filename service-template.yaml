@@ -1,0 +1,160 @@
+# =============================================================================
+# NautiPi Service/Plugin YAML Template (English, with field descriptions)
+# =============================================================================
+
+apiVersion: nautipi.io/v1                     # required – API version, fixed for all services/plugins
+kind: Service                                 # required – Always "Service"
+
+metadata:
+  id: "<service-id>"                          # required – Unique, machine-readable identifier (no spaces/special chars)
+  displayName: "<Service Name>"               # required – Shown in UI, max. 30 characters
+  version: "1.0.0"                            # required – Semantic version (semver, e.g. 1.0.0)
+  description: |                              # required – Short description, 1–3 lines
+    <Short description of the service/plugin>
+  author: "<Author or Project>"               # optional – Name or project (shown in UI, for credits)
+  homepage: "<https://project.url>"           # optional – Project homepage or main website
+  documentation: "<https://docs.url>"         # optional – Link to online docs/manual
+  icon: "<icon.svg|/local/path|data:image/svg+xml;...>" # optional – SVG icon (inline, file, or URL)
+  license: "MIT"                              # optional – License (e.g. MIT, GPL-3.0)
+  tags:                                       # optional – List of keywords/tags (navigation, webui, open-source)
+    - navigation
+    - webui
+
+spec:
+  category: "<navigation|sensor|utility|media|system|custom>"  # optional – Category shown in UI
+  installDir: "/opt/<service>"                                 # optional – Target directory for installation
+
+  lifecycle:                                                   # required – All install/update/remove steps
+    preInstall:
+      commands: []                          # optional – Commands/scripts to run before install
+    install:
+      commands: []                          # required – List of shell commands or scripts to install the service
+    postInstall:
+      commands: []                          # optional – After install
+    update:
+      commands: []                          # optional – Update commands
+    uninstall:
+      commands: []                          # required – Uninstall/remove service
+    checkInstall:
+      command: "<which binary || test -f ...>" # optional – Command to check if install succeeded (returns 0 if installed)
+
+  service:                                                     # required – How the service is managed/run
+    type: "<systemd|docker|docker-compose|process|custom|none>" # required – Backend type (only one active per service)
+    user: "<username>"                                         # optional – Linux user to run as (default: nautipi or root)
+    # Use ONLY ONE of the following blocks according to type:
+    systemd:
+      unit: "<service.service>"              # optional – Name of systemd unit/service (for type: systemd)
+    docker:
+      image: "<repo/image:tag>"              # optional – Docker image (for type: docker)
+      container_name: "<containername>"      # optional – Docker container name
+      ports:
+        - 3000:3000
+      volumes:
+        - /opt/<service>:/data
+      env:                                  # optional – Environment variables
+        VAR: "VALUE"
+      envFile: "/opt/<service>/.env"         # optional – Path to .env file
+    dockerCompose:
+      composeFile: "/opt/<service>/docker-compose.yml" # optional – docker-compose.yml file
+    process:
+      name: "<binary>"                       # optional – Name of binary/executable (for type: process)
+      args: "<args>"                         # optional – Arguments to pass
+      workingDir: "<path>"                   # optional – Working directory for process
+      pidFile: "<path/pidfile>"              # optional – PID file location
+    custom:
+      start: "<start-cmd>"                   # optional – Command to start (for type: custom)
+      stop: "<stop-cmd>"                     # optional – Command to stop
+      status: "<status-cmd>"                 # optional – Command to check status
+
+  statusChecks:                              # optional – List of checks to verify service health/status
+    - type: "systemd"
+      unit: "<service.service>"
+    - type: "http"
+      url: "http://localhost:3000/status"
+      expect: "OK|200"
+      timeout: 3
+    - type: "tcp"
+      host: "localhost"
+      port: 3000
+    - type: "process"
+      name: "<binary>"
+    - type: "custom"
+      command: "<check-cmd>"
+      expect: "<Regex|OK>"
+
+  ports:                                     # optional – Exposed ports for UI or APIs (shown in WebUI)
+    - port: 3000
+      protocol: "http"                       # required – Protocol (http, tcp, etc.)
+      public: true                           # optional – Shown in UI as accessible
+      description: "Web UI"                  # optional – Short description
+      urlPath: "/"                           # optional – Base path (for web UIs)
+      tls: false                             # optional – Is TLS/SSL enabled
+    - port: 8080
+      protocol: "tcp"
+      public: false
+      description: "API Endpoint"
+      interface: "127.0.0.1"
+
+  config:                                    # optional – Configuration files & UI editor schema
+    files:
+      - path: "/etc/<service>/config.yaml"   # required – Full path to config file
+        format: "yaml|ini|json|xml|env|conf|properties" # required – Config format
+        editable: true                       # optional – Allow UI editing (default: false)
+        reload: "restart|signal|none"        # optional – What happens after config edit (default: none)
+        template: "<path/to/default-config>" # optional – Default template file
+        description: "Main configuration"    # optional – Description shown in editor
+        schema:                              # optional – UI form schema for editing config (array)
+          - key: "server.port"
+            type: integer
+            required: true
+            description: "HTTP Port"
+            default: 3000
+            min: 1024
+            max: 65535
+          - key: "auth.enabled"
+            type: boolean
+            description: "Enable authentication"
+            default: false
+      - path: "/etc/<service>/sub-config.conf"
+        format: "ini"
+        editable: false
+        description: "Sub configuration file"
+
+  actions:                                   # optional – Custom UI buttons for actions/commands
+    - name: "Backup"
+      command: "/usr/bin/<service>-backup"
+      confirm: true                          # optional – Show confirmation dialog
+      description: "Backup configuration and data"
+      icon: "archive"
+    - name: "Restart"
+      command: "<restart-cmd>"
+      confirm: false
+      description: "Restart the service"
+      icon: "refresh"
+
+  links:                                     # optional – Useful external/internal links shown in UI
+    - title: "Web UI"
+      url: "http://localhost:3000/"
+      webui: true                            # optional – Open link in NautiPi WebUI
+      description: "Go to service web interface"
+    - title: "API Docs"
+      url: "http://localhost:3000/docs"
+      webui: false
+
+  dependsOn:                                 # optional – Dependency management for other services/plugins
+    required:
+      - id: "<service-id>"
+        version: ">=1.0.0"
+    optional:
+      - id: "<service-id>"
+        version: ">=0.9.0"
+
+  # -- Extension point: custom fields for plugins or advanced use-cases --
+  custom:                                    # optional – Any custom keys, ignored by NautiPi core
+
+# =============================================================================
+# Notes:
+# - Keep required fields to a minimum for easy onboarding!
+# - Clear, consistent structure enables simple docs & editors
+# - NautiPi treats core and plugin YAMLs exactly the same
+# =============================================================================
