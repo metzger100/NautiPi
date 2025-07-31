@@ -1,56 +1,57 @@
-# 🌊 **NautiPi – Das zentrale Software-Management für deinen Webbasierten Raspberry Pi Bordcomputer**
+# 🌊 **NautiPi – The Central Software Management for Your Web-Based Raspberry Pi Onboard Computer**
 
 ---
 
-## Was ist NautiPi und warum ist es wichtig?
+## What is NautiPi and why is it important?
 
-**NautiPi** ist die universelle, benutzerfreundliche Schaltzentrale für den Raspberry Pi als Webbasierten Bordcomputer auf Segel- und Motorbooten. Mit NautiPi kann jeder – egal ob Technikprofi oder Freizeitsegler – den Raspberry Pi auf einfache Weise als Herzstück der Bordelektronik nutzen, verwalten und jederzeit flexibel erweitern. NautiPi legt dabei starken Fokus auf Webbasierte Anwendungen ohne Linux Desktop. Die Oberflächen sind über den Browser bedienbar und es muss kein festes Display und keine Eingabegeräte wie Maus und Tastatur fest am Pi montiert sein.
+**NautiPi** is the universal, user-friendly control center for using the Raspberry Pi as a web-based onboard computer on sailboats and motorboats. With NautiPi, anyone—whether tech pro or leisure sailor—can easily use the Raspberry Pi as the heart of their onboard electronics, manage it, and flexibly extend it at any time. NautiPi focuses strongly on web-based applications without a Linux desktop. All interfaces are accessible via browser, with no need for a permanently attached display or input devices like mouse and keyboard on the Pi.
 
-Viele Bootscrews möchten heute die Vorteile der Digitalisierung nutzen: Navigation, Sensordaten, Wetter, Musik und mehr – alles möglichst einfach, modular und unabhängig von proprietären Komplettlösungen. Hier setzt NautiPi an:
+Many boat crews today want to take advantage of digitalization: navigation, sensor data, weather, music, and more—all as simple, modular, and independent from proprietary all-in-one solutions as possible. This is where NautiPi comes in:
 
-* **Für Anwender (Segler):**
-  NautiPi macht den Einstieg in den Raspberry Pi Bordcomputer so einfach wie möglich. Ohne Linux-Kenntnisse und ohne komplexe Installationsroutinen kann jeder ein modernes, sicheres und wartbares Bord-IT-System aufsetzen. Ein Einrichtungsassistent führt Schritt für Schritt von der WLAN- und Hotspot-Einrichtung bis hin zur Installation und Konfiguration beliebter Bord-Services wie AvNav oder SignalK. Das alles läuft direkt im Browser – ganz ohne Terminal-Befehle.
+* **For Users (Sailors):**
+  NautiPi makes getting started with the Raspberry Pi onboard computer as easy as possible. With no need for Linux knowledge or complex installation routines, anyone can set up a modern, secure, and maintainable onboard IT system. A setup wizard guides users step-by-step—from Wi-Fi and hotspot setup to installing and configuring popular onboard services like AvNav or SignalK. Everything runs directly in the browser—no terminal commands required.
 
-* **Für Entwickler:**
-  NautiPi ist ein offenes, modernes und modulares Framework zur Verwaltung und Integration von Marine-Softwareprojekten. Über standardisierte [YAML-Deskriptoren](https://github.com/metzger100/NautiPi/blob/main/service-template.yaml) können neue Services ohne Core-Fork oder tiefen Code-Eingriff eingebunden werden. Plugins werden wie die nativen Service-Yamls behandelt können aber über die WebUI importiert werden. Eine anschauliche, stets aktuelle Entwicklerdokumentation machen die Mitarbeit einfach und nachhaltig.
+* **For Developers:**
+  NautiPi is an open, modern, and modular framework for managing and integrating marine software projects. Through standardized [YAML descriptors](https://github.com/metzger100/NautiPi/blob/main/service-template.yaml), new services can be integrated without core forks or deep code changes. Plugins are handled just like native service YAMLs, but can also be imported via the WebUI. Clear, always up-to-date developer documentation makes contributing simple and sustainable.
 
-**NautiPi** ist damit ein wichtiger Schritt, die Digitalisierung und Automatisierung an Bord einfach, sicher und unabhängig zu gestalten – ein Gewinn für Segler, Entwickler und die Community gleichermaßen!
+**NautiPi** is an important step toward making onboard digitalization and automation easy, secure, and independent—a win for sailors, developers, and the community alike!
 
 ---
 
-## 💾 Grundsätzliche Projektübersicht:
+## 💾 Basic Project Overview
 
-### 🚀 Workflow für User:
+### 🚀 User Workflow
 
-* Raspberry Pi OS Lite flashen
-* Installationsskript ausführen
-* Hotspot automatisch gestartet → Verbindung herstellen
-* Wizard via WebUI führt User durch:
-  * WLAN konfigurieren
-  * SSH/FTP aktivieren
-  * Nutzer & Passwörter setzen
-* Hotspot deaktiviert, IP & Zugangsdaten werden angezeigt
-* Services via WebUI installieren, verwalten & konfigurieren (inkl. Plugins)
-* Zentrale Verwaltung, Updates und Logauswertung direkt im WebUI
+* Flash Raspberry Pi OS Lite
+* Run installation script
+* Hotspot starts automatically → connect to it
+* Wizard via WebUI guides user through:
 
-## 🧩 Grundsätzliche Strukturübersicht:
+  * Wi-Fi configuration
+  * Enable SSH/FTP
+  * Set user & passwords
+* Hotspot deactivates, IP & access data displayed
+* Install, manage & configure services via WebUI (including plugins)
+* Central management, updates, and log analysis directly in WebUI
 
-NautiPi ist modular aufgebaut und besteht aus zwei Kernkomponenten:
+## 🧩 Basic Structure Overview
+
+NautiPi is modular and consists of two core components:
 
 * **Backend:**
 
-  * Verwaltung von Systemdiensten, Installation, Konfiguration, Updates, Sicherheit und Logging
-  * Kommunikation über REST-API/WebSocket (Single Source of Truth)
-  * Verwaltung über standardisierte und versionierte [YAML-Beschreibungsdateien](https://github.com/metzger100/NautiPi/blob/main/service-template.yaml) pro Service/Plugin
+  * Manages system services, installation, configuration, updates, security, and logging
+  * Communicates via REST API/WebSocket (Single Source of Truth)
+  * Managed via standardized and versioned [YAML descriptor files](https://github.com/metzger100/NautiPi/blob/main/service-template.yaml) per service/plugin
 
 * **WebUI (Frontend):**
 
-  * Benutzerfreundlich, intuitiv, einfach wartbar und leicht erweiterbar
-  * Responsive für Desktop, Tablet und Smartphone
+  * User-friendly, intuitive, easy to maintain and extend
+  * Responsive for desktop, tablet, and smartphone
 
 ---
 
-## 📁 Dateistruktur:
+## 📁 File Structure
 
 ```plaintext
 nautipi/
@@ -84,7 +85,7 @@ nautipi/
 │       └── package.json
 │
 ├── docs/
-│   └── (Dokumentation & Entwickleranleitung, Plugin Cookbook)
+│   └── (Documentation & developer guide, plugin cookbook)
 │
 └── setup/
     ├── install.sh
@@ -93,14 +94,14 @@ nautipi/
 
 ---
 
-## 🛠️ Backend-Technologie (Python):
+## 🛠️ Backend Technology (Python)
 
-Das Backend wird in **Python** umgesetzt, da Python Standard auf Raspberry Pi OS ist, einfach zu warten ist und mit minimalen Abhängigkeiten auskommt.
+The backend is implemented in **Python**, as Python is standard on Raspberry Pi OS, easy to maintain, and requires minimal dependencies.
 
 * **Framework:** [FastAPI](https://fastapi.tiangolo.com/)
 
-  * Schnell, leichtgewichtig, modern (async)
-  * REST-API & WebSocket nativ unterstützt:
+  * Fast, lightweight, modern (async)
+  * REST API & WebSocket natively supported:
 
 ```plaintext
 GET /api/services
@@ -114,111 +115,112 @@ POST /api/selfupdate
 GET /metrics
 ```
 
-  * **Deployment:**
+* **Deployment:**
 
-    * Uvicorn mit Worker/Async-Konfiguration geprüft (`--workers 1 --loop uvloop --http httptools` als Default, erweiterbar bei Mehrlast)
-    * Optional: Gunicorn für Workermodell, falls Skalierung notwendig
+  * Uvicorn with worker/async configuration as default (`--workers 1 --loop uvloop --http httptools`), can be extended for higher load
+  * Optional: Gunicorn for worker model if scaling is needed
 
-* **Serviceverwaltung via YAML**:
+* **Service Management via YAML:**
 
-  * Jeder Service (AvNav, SignalK, Plugins) erhält eine eigene [YAML-Beschreibungsdatei](https://github.com/metzger100/NautiPi/blob/main/service-template.yaml) mit semver-Header
+  * Each service (AvNav, SignalK, plugins) gets its own [YAML descriptor file](https://github.com/metzger100/NautiPi/blob/main/service-template.yaml) with semver header
 
-* **Plugin-System:**
+* **Plugin System:**
 
-  * Plugins via [yaml](https://github.com/metzger100/NautiPi/blob/main/service-template.yaml) import.
-  * Plugins sind identisch wie die service [yamls](https://github.com/metzger100/NautiPi/blob/main/service-template.yaml), nur kommen diese nicht mit dem core package mit
+  * Plugins are imported via [YAML](https://github.com/metzger100/NautiPi/blob/main/service-template.yaml)
+  * Plugins are identical to service [YAMLs](https://github.com/metzger100/NautiPi/blob/main/service-template.yaml), just not shipped with the core package
 
 * **Security & Deployment:**
 
-  * **Auth**: lokaler Linux-User (oder PAM)
-  * **OTA/Self-Updates:** `git pull` und restart
-  * **Logging:** systemd tail logs, Download-Button im WebUI
+  * **Auth:** local Linux user (or PAM)
+  * **OTA/Self-Updates:** `git pull` and restart
+  * **Logging:** systemd tail logs, download button in WebUI
 
-* **Installation als Service (systemd):**
+* **Install as a Service (systemd):**
 
-  * Automatische Einrichtung bei Installation
-  * Self-Update-Mechanismus
+  * Automatic setup during installation
+  * Self-update mechanism
 
 ---
 
-## 🌐 WebUI-Frontend (SvelteKit):
+## 🌐 WebUI Frontend (SvelteKit)
 
-Für die WebUI kommt **SvelteKit** zum Einsatz:
+**SvelteKit** is used for the WebUI:
 
 * **SvelteKit**
-  * Modern, performant, intuitiv und einfach zu erweitern
-* **Styling**: TailwindCSS (schnell, responsive, modern)
-* **Design-System:** Gemeinsame Komponentenbibliothek (Tailwind + Radix/Headless UI), Styles und Tokens zentral gepflegt (Look & Feel bleibt einheitlich)
-* **API-Kommunikation:** Axios oder Fetch
 
-**Features im WebUI:**
+  * Modern, performant, intuitive, and easy to extend
+* **Styling:** TailwindCSS (fast, responsive, modern)
+* **Design System:** Shared component library (Tailwind + Radix/Headless UI), styles and tokens managed centrally (look & feel stays consistent)
+* **API Communication:** Axios or Fetch
 
-* Step-by-Step Onboarding/Wizard (WLAN, Hotspot, User, SSH, Updates…)
-* [Service](https://github.com/metzger100/NautiPi/blob/main/service-template.yaml)-Installations- und Verwaltungsoberfläche (mit Plugin-Unterstützung)
-* Konfigurationseditor pro Service ([YAML-Deskriptor](https://github.com/metzger100/NautiPi/blob/main/service-template.yaml) steuert, welche Optionen editierbar sind)
-* (Keine Prio) Zentrale Log-Ansicht (Systemd-Logs via Tail auslesen, Download für Support)
-* Self-Update-Button
-* (Keine Prio) Plugins: Drittanbieter können ihre Service-YAMLs bereitstellen, die über das WebUI importiert und angezeigt werden
+**Features in the WebUI:**
+
+* Step-by-step onboarding/wizard (Wi-Fi, hotspot, user, SSH, updates…)
+* [Service](https://github.com/metzger100/NautiPi/blob/main/service-template.yaml) installation and management interface (with plugin support)
+* Configuration editor per service ([YAML descriptor](https://github.com/metzger100/NautiPi/blob/main/service-template.yaml) defines which options are editable)
+* (Low priority) Central log view (systemd logs via tail, download for support)
+* Self-update button
+* (Low priority) Plugins: third parties can provide their service YAMLs, which can be imported and displayed via WebUI
 
 ---
 
-## 🗄️ Plugins & Erweiterbarkeit (Keine Prio)
+## 🗄️ Plugins & Extensibility (Low Priority)
 
-* Services sind als [YAML-Deskriptoren](https://github.com/metzger100/NautiPi/blob/main/service-template.yaml) modular integriert (nativ oder Drittanbieter/Plugins)
-* Plugins können von Drittentwicklern einfach bereitgestellt, importiert und direkt im WebUI aktiviert werden.
-* [Plugin-YAML](https://github.com/metzger100/NautiPi/blob/main/service-template.yaml) validierung beim import in Zukunft vorstellbar
+* Services are integrated modularly as [YAML descriptors](https://github.com/metzger100/NautiPi/blob/main/service-template.yaml) (native or third-party/plugins)
+* Plugins can be easily provided by third-party developers, imported, and enabled directly in the WebUI
+* [Plugin YAML](https://github.com/metzger100/NautiPi/blob/main/service-template.yaml) validation during import conceivable in the future
 
 ---
 
 ## 🔒 Security & Updates
 
-* **Login/Authentifizierung** lokaler User (eventuell PAM-Login)
-* **OTA/Self-Updates** `git pull` und restart
-* **Log- und Fehleranalyse:** systemd logs via tail und Download für support
+* **Login/Authentication** via local user (optionally PAM login)
+* **OTA/Self-Updates** via `git pull` and restart
+* **Log and error analysis:** systemd logs via tail and download for support
 
 ---
 
-## 📜 Installation und Initialsetup:
+## 📜 Installation and Initial Setup
 
-### Installationsworkflow (Einzeiler nach Flashing von Raspberry OS Lite):
+### Installation workflow (one-liner after flashing Raspberry OS Lite):
 
 ```bash
 curl -sSL https://github.com/youruser/NautiPi/raw/main/setup/install.sh | bash
 ```
 
-* Skript installiert alle Abhängigkeiten
-* Hotspot automatisch aktiviert (via `hostapd` + `dnsmasq`)
-* Systemd-Service eingerichtet und startet automatisch
+* Script installs all dependencies
+* Hotspot activated automatically (via `hostapd` + `dnsmasq`)
+* Systemd service set up and starts automatically
 
 ---
 
-## 📖 Dokumentation & Entwicklerfreundlichkeit:
+## 📖 Documentation & Developer Friendliness
 
-* **Markdown-Dokumentation** im `docs`-Ordner des Projekts
-* **OpenAPI-Schema** für REST-API
-* Beispiel-YAML für Drittanbieter bereitstellen (Plugin-Entwicklung)
-* Plugin-Cookbook (Hello-World-Plugin) als Doku-Vorlage
-* GitHub-Wiki oder GitHub-Pages
-* **Automatische Dokumentation** aus API & YAML (Markdown, Mermaid, Redocly)
-
----
-
-## 🌐 Einbettung in die Open‑Source‑Bootsoftware‑Szene
-
-NautiPi positioniert sich als leichtgewichtiges, webbasiertes Management‑Framework für Raspberry Pi Bordcomputer — mit klarem Fokus auf moderne Webtechnologien wie SignalK und AvNav. Im Vergleich zu etablierten Systemen wie OpenPlotter oder Bareboat (BBN) OS verzichtet NautiPi auf eine klassische Desktop‑GUI oder Chartplotter‑Frontends und bietet stattdessen eine modulare WebUI zur einfachen Installation, Konfiguration und Verwaltung von Services.
-
-Während OpenPlotter und BBN OS vollwertige Betriebssystem‑Images liefern, inklusive grafikbasierter Nutzeroberfläche, Chartplotter (z. B. OpenCPN), Medienwiedergabe und umfangreicher Hardware‑Integration, zielt NautiPi auf Anwender und Entwickler, die eine schlanke, headless oder hotspot‑basierte Lösung im Browser nutzen möchten.
-
-NautiPi ergänzt die Szene ideal als **modularer Boot-Service‑Manager**, als Alternative für User, die sich auf Netzwerk‑basierte Dienste konzentrieren und auf aufwändige GUIs/feste Displays verzichten möchten.
+* **Markdown documentation** in the `docs` folder of the project
+* **OpenAPI schema** for REST API
+* Example YAML provided for third parties (plugin development)
+* Plugin cookbook (hello-world plugin) as doc template
+* GitHub Wiki or GitHub Pages
+* **Automatic documentation** from API & YAML (Markdown, Mermaid, Redocly)
 
 ---
 
-### 🔍 Übersicht: NautiPi im Vergleich zum Open Source Umfeld
+## 🌐 Positioning in the Open Source Boat Software Scene
 
-| **System / Projekt**       | **Art / Fokus**                             | **GUI‑Typ**                    | **SignalK & AvNav**                                                                      |
-| -------------------------- | ------------------------------------------- | ------------------------------ | -----------------------------------------------------------------------------------------|
-| **NautiPi**                | Web‑basiertes Framework                     | WebUI / Wizard (Headless)      | Integriert via YAML‑Services                                                             |
-| **OpenPlotter**            | Komplettes Raspberry Pi OS‑Image für Marine | Desktop‑GUI (X‑Server)         | Unterstützt via Plugins                                                                  ||
-| **Bareboat (BBN) OS**      | Linux‑Distro mit Fokus auf Bootscomputer    | Desktop‑GUI + Touchscreen      | SignalK & AvNav vorinstalliert                                                           |
+NautiPi positions itself as a lightweight, web-based management framework for Raspberry Pi onboard computers—with a clear focus on modern web technologies like SignalK and AvNav. In contrast to established systems like OpenPlotter or Bareboat (BBN) OS, NautiPi avoids a classic desktop GUI or chartplotter frontends, offering instead a modular WebUI for easy installation, configuration, and management of services.
+
+While OpenPlotter and BBN OS provide full operating system images, including graphical user interfaces, chartplotters (e.g., OpenCPN), media playback, and extensive hardware integration, NautiPi targets users and developers seeking a slim, headless, or hotspot-based browser solution.
+
+NautiPi is the perfect complement to the ecosystem as a **modular boat service manager**, serving as an alternative for users who want to focus on network-based services and prefer to skip heavy GUIs or dedicated displays.
+
+---
+
+### 🔍 Overview: NautiPi Compared to the Open Source Ecosystem
+
+| **System / Project**  | **Type / Focus**                          | **GUI Type**              | **SignalK & AvNav**          |   |
+| --------------------- | ----------------------------------------- | ------------------------- | ---------------------------- | - |
+| **NautiPi**           | Web-based framework                       | WebUI / Wizard (Headless) | Integrated via YAML services |   |
+| **OpenPlotter**       | Complete Raspberry Pi OS image for marine | Desktop GUI (X Server)    | Supported via plugins        |   |
+| **Bareboat (BBN) OS** | Linux distro focused on onboard computers | Desktop GUI + touchscreen | SignalK & AvNav preinstalled |   |
 
 ---
