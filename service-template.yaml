@@ -1,5 +1,5 @@
 # =============================================================================
-# NautiPi Service/Plugin YAML Template (English, with field descriptions)
+# NautiPi Service/Plugin YAML Template
 # =============================================================================
 
 apiVersion: nautipi.io/v1                     # required – API version, fixed for all services/plugins
