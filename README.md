@@ -250,9 +250,7 @@ curl -sSL https://github.com/youruser/NautiPi/raw/main/setup/install.sh | bash
 * Plugin-Cookbook (Hello-World-Plugin) als Doku-Vorlage
 * GitHub-Wiki oder GitHub-Pages
 * **Automatische Dokumentation** aus API & YAML (Markdown, Mermaid, Redocly)
-* Linting/Validierung per CI-Workflow (GitHub Actions), Pre-commit Hooks (ruff/black/mypy)
 * **Schema-Validierung:** Fehler in Plugins/YAMLs werden früh erkannt und im WebUI mitgeteilt
-* Dev-Container (VS Code/Podman) für schnellen Einstieg
 
 ---
 
@@ -267,6 +265,5 @@ curl -sSL https://github.com/youruser/NautiPi/raw/main/setup/install.sh | bash
 | Sicherheit      | Auth, Vault                            | Sichere und nachvollziehbare Basis                   |
 | Logging         | structlog, Ringbuffer, Web-Logtail     | Schnelle Fehlersuche, Support                        |
 | Erweiterbarkeit | Plugins via Entry Points & YAML        | Schnell und ohne Core-Fork erweiterbar               |
-| CI/CD           | GitHub Actions, Pre-commit, SBOM       | Zuverlässig, nachvollziehbar, contributor-freundlich |
 
 ---
