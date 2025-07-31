@@ -12,7 +12,7 @@ Viele Bootscrews möchten heute die Vorteile der Digitalisierung nutzen: Navigat
   NautiPi macht den Einstieg in den Raspberry Pi Bordcomputer so einfach wie möglich. Ohne Linux-Kenntnisse und ohne komplexe Installationsroutinen kann jeder ein modernes, sicheres und wartbares Bord-IT-System aufsetzen. Ein Einrichtungsassistent führt Schritt für Schritt von der WLAN- und Hotspot-Einrichtung bis hin zur Installation und Konfiguration beliebter Bord-Services wie AvNav oder SignalK. Das alles läuft direkt im Browser – ganz ohne Terminal-Befehle.
 
 * **Für Entwickler:**
-  NautiPi ist ein offenes, modernes und modulares Framework zur Verwaltung und Integration von Marine-Softwareprojekten. Über standardisierte YAML-Deskriptoren können neue Services ohne Core-Fork oder tiefen Code-Eingriff eingebunden werden. Plugins werden wie die nativen Service-Yamls behandelt können aber über die WebUI importiert werden. Eine anschauliche, stets aktuelle Entwicklerdokumentation machen die Mitarbeit einfach und nachhaltig.
+  NautiPi ist ein offenes, modernes und modulares Framework zur Verwaltung und Integration von Marine-Softwareprojekten. Über standardisierte [YAML-Deskriptoren](https://github.com/metzger100/NautiPi/blob/main/service-template.yaml) können neue Services ohne Core-Fork oder tiefen Code-Eingriff eingebunden werden. Plugins werden wie die nativen Service-Yamls behandelt können aber über die WebUI importiert werden. Eine anschauliche, stets aktuelle Entwicklerdokumentation machen die Mitarbeit einfach und nachhaltig.
 
 **NautiPi** ist damit ein wichtiger Schritt, die Digitalisierung und Automatisierung an Bord einfach, sicher und unabhängig zu gestalten – ein Gewinn für Segler, Entwickler und die Community gleichermaßen!
 
@@ -41,7 +41,7 @@ NautiPi ist modular aufgebaut und besteht aus zwei Kernkomponenten:
 
   * Verwaltung von Systemdiensten, Installation, Konfiguration, Updates, Sicherheit und Logging
   * Kommunikation über REST-API/WebSocket (Single Source of Truth)
-  * Verwaltung über standardisierte und versionierte YAML-Beschreibungsdateien pro Service/Plugin
+  * Verwaltung über standardisierte und versionierte [YAML-Beschreibungsdateien](https://github.com/metzger100/NautiPi/blob/main/service-template.yaml) pro Service/Plugin
 
 * **WebUI (Frontend):**
 
@@ -121,12 +121,12 @@ GET /metrics
 
 * **Serviceverwaltung via YAML**:
 
-  * Jeder Service (AvNav, SignalK, Plugins) erhält eine eigene YAML-Beschreibungsdatei mit semver-Header
+  * Jeder Service (AvNav, SignalK, Plugins) erhält eine eigene [YAML-Beschreibungsdatei](https://github.com/metzger100/NautiPi/blob/main/service-template.yaml) mit semver-Header
 
 * **Plugin-System:**
 
-  * Plugins via yaml import.
-  * Plugins sind identisch wie die service yamls, nur kommen diese nicht mit dem core package mit
+  * Plugins via [yaml](https://github.com/metzger100/NautiPi/blob/main/service-template.yaml) import.
+  * Plugins sind identisch wie die service [yamls](https://github.com/metzger100/NautiPi/blob/main/service-template.yaml), nur kommen diese nicht mit dem core package mit
 
 * **Security & Deployment:**
 
@@ -154,8 +154,8 @@ Für die WebUI kommt **SvelteKit** zum Einsatz:
 **Features im WebUI:**
 
 * Step-by-Step Onboarding/Wizard (WLAN, Hotspot, User, SSH, Updates…)
-* Service-Installations- und Verwaltungsoberfläche (mit Plugin-Unterstützung)
-* Konfigurationseditor pro Service (YAML-Deskriptor steuert, welche Optionen editierbar sind)
+* [Service](https://github.com/metzger100/NautiPi/blob/main/service-template.yaml)-Installations- und Verwaltungsoberfläche (mit Plugin-Unterstützung)
+* Konfigurationseditor pro Service ([YAML-Deskriptor](https://github.com/metzger100/NautiPi/blob/main/service-template.yaml) steuert, welche Optionen editierbar sind)
 * (Keine Prio) Zentrale Log-Ansicht (Systemd-Logs via Tail auslesen, Download für Support)
 * Self-Update-Button
 * (Keine Prio) Plugins: Drittanbieter können ihre Service-YAMLs bereitstellen, die über das WebUI importiert und angezeigt werden
@@ -164,9 +164,9 @@ Für die WebUI kommt **SvelteKit** zum Einsatz:
 
 ## 🗄️ Plugins & Erweiterbarkeit (Keine Prio)
 
-* Services sind als YAML-Deskriptoren modular integriert (nativ oder Drittanbieter/Plugins)
+* Services sind als [YAML-Deskriptoren](https://github.com/metzger100/NautiPi/blob/main/service-template.yaml) modular integriert (nativ oder Drittanbieter/Plugins)
 * Plugins können von Drittentwicklern einfach bereitgestellt, importiert und direkt im WebUI aktiviert werden.
-* Plugin-YAML validierung beim import in Zukunft vorstellbar
+* [Plugin-YAML](https://github.com/metzger100/NautiPi/blob/main/service-template.yaml) validierung beim import in Zukunft vorstellbar
 
 ---
 
