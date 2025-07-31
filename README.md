@@ -131,7 +131,7 @@ GET /metrics
 * **Security & Deployment:**
 
   * **Auth**: lokaler Linux-User (oder PAM)
-  * **OTA/Self-Updates:** git pull und restart
+  * **OTA/Self-Updates:** `git pull` und restart
   * **Logging:** systemd tail logs, Download-Button im WebUI
 
 * **Installation als Service (systemd):**
@@ -173,7 +173,7 @@ Für die WebUI kommt **SvelteKit** zum Einsatz:
 ## 🔒 Security & Updates
 
 * **Login/Authentifizierung** lokaler User (eventuell PAM-Login)
-* **OTA/Self-Updates** git pull und restart
+* **OTA/Self-Updates** `git pull` und restart
 * **Log- und Fehleranalyse:** systemd logs via tail und Download für support
 
 ---
