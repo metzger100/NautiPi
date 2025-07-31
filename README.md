@@ -16,7 +16,22 @@ Viele Bootscrews möchten heute die Vorteile der Digitalisierung nutzen: Navigat
 
 ---
 
-## 🧩 1. Grundsätzliche Strukturübersicht:
+## 💾 Grundsätzliche Projektübersicht:
+
+### 🚀 Workflow für User:
+
+* Raspberry Pi OS Lite flashen
+* Installationsskript ausführen
+* Hotspot automatisch gestartet → Verbindung herstellen
+* Wizard via WebUI führt User durch:
+  * WLAN konfigurieren
+  * SSH/FTP aktivieren
+  * Nutzer & Passwörter setzen
+* Hotspot deaktiviert, IP & Zugangsdaten werden angezeigt
+* Services via WebUI installieren, verwalten & konfigurieren (inkl. Plugins)
+* Zentrale Verwaltung, Updates und Logauswertung direkt im WebUI
+
+## 🧩 Grundsätzliche Strukturübersicht:
 
 NautiPi ist modular aufgebaut und besteht aus zwei Kernkomponenten:
 
@@ -35,7 +50,7 @@ NautiPi ist modular aufgebaut und besteht aus zwei Kernkomponenten:
 
 ---
 
-## 📁 2. Dateistruktur (Empfohlene Verzeichnisstruktur):
+## 📁 Dateistruktur:
 
 ```plaintext
 nautipi/
@@ -67,11 +82,12 @@ nautipi/
 │   └── sbom/                  # CycloneDX SBOM aus CI
 │
 ├── frontend/
-│   ├── src/
-│   │   ├── lib/
-│   │   │   └── design-system/
-│   │   └── routes/
-│   └── package.json
+│   └── webui/
+│       ├── src/
+│       │   ├── lib/
+│       │   │   └── design-system/
+│       │   └── routes/
+│       └── package.json
 │
 ├── docs/
 │   └── (Dokumentation & Entwickleranleitung, Plugin Cookbook)
@@ -86,14 +102,27 @@ nautipi/
 
 ---
 
-## 🛠️ 3. Backend-Technologie (Python):
+## 🛠️ Backend-Technologie (Python):
 
 Das Backend wird in **Python** umgesetzt, da Python Standard auf Raspberry Pi OS ist, einfach zu warten ist und mit minimalen Abhängigkeiten auskommt.
 
 * **Framework:** [FastAPI](https://fastapi.tiangolo.com/)
 
   * Schnell, leichtgewichtig, modern (async), OpenAPI-Doku out-of-the-box
-  * REST-API & WebSocket nativ unterstützt
+  * REST-API & WebSocket nativ unterstützt:
+
+```plaintext
+GET /api/services
+GET /api/services/{name}
+POST /api/services/{name}/install
+POST /api/services/{name}/update
+POST /api/services/{name}/configure
+GET /api/system/status
+GET /api/logs/tail
+POST /api/selfupdate
+GET /metrics
+```
+
   * Automatische API-Dokumentation und OpenAPI-Schema (redocly/swagger)
   * **Deployment:**
 
@@ -152,7 +181,7 @@ Das Backend wird in **Python** umgesetzt, da Python Standard auf Raspberry Pi OS
 
 ---
 
-## 🌐 4. WebUI-Frontend (SvelteKit):
+## 🌐 WebUI-Frontend (SvelteKit):
 
 Für die WebUI kommt **SvelteKit** zum Einsatz:
 
@@ -177,7 +206,7 @@ Für die WebUI kommt **SvelteKit** zum Einsatz:
 
 ---
 
-## 🗄️ 5. Plugins & Erweiterbarkeit
+## 🗄️ Plugins & Erweiterbarkeit
 
 * Services sind als YAML-Deskriptoren modular integriert (nativ oder Drittanbieter/Plugins)
 * Plugins werden via Entry Points registriert und über YAML- und Python-API validiert (Plugin-Spec)
@@ -186,7 +215,7 @@ Für die WebUI kommt **SvelteKit** zum Einsatz:
 
 ---
 
-## 🔒 6. Security & Updates
+## 🔒 Security & Updates
 
 * **Login/Authentifizierung** PAM-Login
 * **OTA/Self-Updates** via GitHub Releases und Self-Update-Button im WebUI (rolling release, rsync-delta, Checksummen-Validierung, Minisign)
@@ -196,7 +225,7 @@ Für die WebUI kommt **SvelteKit** zum Einsatz:
 
 ---
 
-## 📜 7. Installation und Initialsetup:
+## 📜 Installation und Initialsetup:
 
 ### Installationsworkflow (Einzeiler nach Flashing von Raspberry OS Lite):
 
@@ -212,22 +241,7 @@ curl -sSL https://github.com/youruser/NautiPi/raw/main/setup/install.sh | bash
 
 ---
 
-## 🚀 8. Start-Workflow für User:
-
-* Raspberry Pi OS Lite flashen
-* Installationsskript ausführen
-* Hotspot automatisch gestartet → Verbindung herstellen
-* Wizard via WebUI führt User durch:
-  * WLAN konfigurieren
-  * SSH/FTP aktivieren
-  * Nutzer & Passwörter setzen
-* Hotspot deaktiviert, IP & Zugangsdaten werden angezeigt
-* Services via WebUI installieren, verwalten & konfigurieren (inkl. Plugins)
-* Zentrale Verwaltung, Updates und Logauswertung direkt im WebUI
-
----
-
-## 📖 9. Dokumentation & Entwicklerfreundlichkeit:
+## 📖 Dokumentation & Entwicklerfreundlichkeit:
 
 * **Markdown-Dokumentation** im `docs`-Ordner des Projekts
 * **OpenAPI-Schema** (Redocly/Swagger) für REST-API
@@ -242,7 +256,7 @@ curl -sSL https://github.com/youruser/NautiPi/raw/main/setup/install.sh | bash
 
 ---
 
-## ✅ 10. Zusammenfassung der ausgewählten Technologien:
+## ✅ Zusammenfassung der ausgewählten Technologien:
  
 | Bereich         | Technologie                            | Gründe                                               |
 | --------------- | -------------------------------------- | ---------------------------------------------------- |
@@ -256,18 +270,3 @@ curl -sSL https://github.com/youruser/NautiPi/raw/main/setup/install.sh | bash
 | CI/CD           | GitHub Actions, Pre-commit, SBOM       | Zuverlässig, nachvollziehbar, contributor-freundlich |
 
 ---
-
-## ⚙️ 11. Beispiel für REST-Endpunkte (Backend):
-
-```plaintext
-GET /api/services
-GET /api/services/{name}
-POST /api/services/{name}/install
-POST /api/services/{name}/update
-POST /api/services/{name}/configure
-GET /api/system/status
-GET /api/logs/tail
-POST /api/selfupdate
-GET /metrics
-```
-
