@@ -205,7 +205,7 @@ curl -sSL https://github.com/youruser/NautiPi/raw/main/setup/install.sh | bash
 
 ## 🌐 Einbettung in die Open‑Source‑Bootsoftware‑Szene
 
-NautiPi positioniert sich bewusst als leichtgewichtiges, webbasiertes Management‑Framework für Raspberry Pi Bordcomputer — mit klarem Fokus auf moderne Webtechnologien wie SignalK und AvNav. Im Vergleich zu etablierten Systemen wie OpenPlotter oder Bareboat (BBN) OS verzichtet NautiPi auf eine klassische Desktop‑GUI oder Chartplotter‑Frontends und bietet stattdessen eine modulare WebUI zur einfachen Installation, Konfiguration und Verwaltung von Services.
+NautiPi positioniert sich als leichtgewichtiges, webbasiertes Management‑Framework für Raspberry Pi Bordcomputer — mit klarem Fokus auf moderne Webtechnologien wie SignalK und AvNav. Im Vergleich zu etablierten Systemen wie OpenPlotter oder Bareboat (BBN) OS verzichtet NautiPi auf eine klassische Desktop‑GUI oder Chartplotter‑Frontends und bietet stattdessen eine modulare WebUI zur einfachen Installation, Konfiguration und Verwaltung von Services.
 
 Während OpenPlotter und BBN OS vollwertige Betriebssystem‑Images liefern, inklusive grafikbasierter Nutzeroberfläche, Chartplotter (z. B. OpenCPN), Medienwiedergabe und umfangreicher Hardware‑Integration, zielt NautiPi auf Anwender und Entwickler, die eine schlanke, headless oder hotspot‑basierte Lösung im Browser nutzen möchten.
 
