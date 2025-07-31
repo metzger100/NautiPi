@@ -22,7 +22,6 @@ metadata:
 
 spec:
   category: "<navigation|sensor|utility|media|system|custom>"  # optional – Category shown in UI
-  installDir: "/opt/<service>"                                 # optional – Target directory for installation
 
   lifecycle:                                                   # required – All install/update/remove steps
     preInstall:
@@ -38,7 +37,7 @@ spec:
     checkInstall:
       command: "<which binary || test -f ...>" # optional – Command to check if install succeeded (returns 0 if installed)
 
-  service:                                                     # required – How the service is managed/run
+  service:                                                     # required – How the service is managed/run (start/stop/status)
     type: "<systemd|docker|docker-compose|process|custom|none>" # required – Backend type (only one active per service)
     user: "<username>"                                         # optional – Linux user to run as (default: nautipi or root)
     # Use ONLY ONE of the following blocks according to type:
@@ -82,25 +81,24 @@ spec:
       command: "<check-cmd>"
       expect: "<Regex|OK>"
 
-  ports:                                     # optional – Exposed ports for UI or APIs (shown in WebUI)
+  ports:                                     # optional – Exposed ports for UI or APIs (to check for incompatibilties)
     - port: 3000
       protocol: "http"                       # required – Protocol (http, tcp, etc.)
-      public: true                           # optional – Shown in UI as accessible
       description: "Web UI"                  # optional – Short description
+      editable: "true"                       # optional – Editable in the configs (in case of incompatibilies)
       urlPath: "/"                           # optional – Base path (for web UIs)
       tls: false                             # optional – Is TLS/SSL enabled
     - port: 8080
       protocol: "tcp"
-      public: false
       description: "API Endpoint"
+      editable: "false"
       interface: "127.0.0.1"
 
   config:                                    # optional – Configuration files & UI editor schema
     files:
       - path: "/etc/<service>/config.yaml"   # required – Full path to config file
-        format: "yaml|ini|json|xml|env|conf|properties" # required – Config format
-        editable: true                       # optional – Allow UI editing (default: false)
-        reload: "restart|signal|none"        # optional – What happens after config edit (default: none)
+        format: "yaml|ini|json|xml|env|conf|properties|file" # required – Config format (file - no UI; but file editor)
+        reload: "<restart-cmd>|<signal-cmd>|none"            # optional – What happens after config edit (default: none)
         template: "<path/to/default-config>" # optional – Default template file
         description: "Main configuration"    # optional – Description shown in editor
         schema:                              # optional – UI form schema for editing config (array)
@@ -108,16 +106,13 @@ spec:
             type: integer
             required: true
             description: "HTTP Port"
-            default: 3000
             min: 1024
             max: 65535
           - key: "auth.enabled"
             type: boolean
             description: "Enable authentication"
-            default: false
       - path: "/etc/<service>/sub-config.conf"
-        format: "ini"
-        editable: false
+        format: "file"
         description: "Sub configuration file"
 
   actions:                                   # optional – Custom UI buttons for actions/commands
@@ -135,11 +130,9 @@ spec:
   links:                                     # optional – Useful external/internal links shown in UI
     - title: "Web UI"
       url: "http://localhost:3000/"
-      webui: true                            # optional – Open link in NautiPi WebUI
       description: "Go to service web interface"
     - title: "API Docs"
       url: "http://localhost:3000/docs"
-      webui: false
 
   dependsOn:                                 # optional – Dependency management for other services/plugins
     required:
@@ -148,13 +141,3 @@ spec:
     optional:
       - id: "<service-id>"
         version: ">=0.9.0"
-
-  # -- Extension point: custom fields for plugins or advanced use-cases --
-  custom:                                    # optional – Any custom keys, ignored by NautiPi core
-
-# =============================================================================
-# Notes:
-# - Keep required fields to a minimum for easy onboarding!
-# - Clear, consistent structure enables simple docs & editors
-# - NautiPi treats core and plugin YAMLs exactly the same
-# =============================================================================
