@@ -197,7 +197,7 @@ Für die WebUI kommt **SvelteKit** zum Einsatz:
 **Features im WebUI:**
 
 * Step-by-Step Onboarding/Wizard (WLAN, Hotspot, User, SSH, Updates…)
-* Service-Installations- und Verwaltungsoberfläche (mit Plugin-Unterstützung und Migrationstools)
+* Service-Installations- und Verwaltungsoberfläche (mit Plugin-Unterstützung)
 * Konfigurationseditor pro Service (YAML-Deskriptor steuert, welche Optionen editierbar sind, Validation und Migrations-Layer)
 * Zentrale Log-Ansicht (Ringbuffer, Live Logtail via WebSocket, Download für Support)
 * Self-Update-Button, Anzeige Systemstatus
@@ -209,9 +209,8 @@ Für die WebUI kommt **SvelteKit** zum Einsatz:
 ## 🗄️ Plugins & Erweiterbarkeit
 
 * Services sind als YAML-Deskriptoren modular integriert (nativ oder Drittanbieter/Plugins)
-* Plugins werden via Entry Points registriert und über YAML- und Python-API validiert (Plugin-Spec)
-* Plugins können von Drittentwicklern einfach bereitgestellt, importiert und direkt im WebUI aktiviert werden, inkl. automatischer Validierung und Version-Check
-* Automatische Migration bei Breaking Changes via Semver und Migrations-Layer
+* Plugins können von Drittentwicklern einfach bereitgestellt, importiert und direkt im WebUI aktiviert werden.
+* Plugin-YAML validierung beim import in Zukunft vorstellbar
 
 ---
 
@@ -250,7 +249,6 @@ curl -sSL https://github.com/youruser/NautiPi/raw/main/setup/install.sh | bash
 * Plugin-Cookbook (Hello-World-Plugin) als Doku-Vorlage
 * GitHub-Wiki oder GitHub-Pages
 * **Automatische Dokumentation** aus API & YAML (Markdown, Mermaid, Redocly)
-* **Schema-Validierung:** Fehler in Plugins/YAMLs werden früh erkannt und im WebUI mitgeteilt
 
 ---
 
@@ -264,6 +262,6 @@ curl -sSL https://github.com/youruser/NautiPi/raw/main/setup/install.sh | bash
 | Installation    | Shellskript                            | Einfach, minimalistisch, wartungsfreundlich          |
 | Sicherheit      | Auth, Vault                            | Sichere und nachvollziehbare Basis                   |
 | Logging         | structlog, Ringbuffer, Web-Logtail     | Schnelle Fehlersuche, Support                        |
-| Erweiterbarkeit | Plugins via Entry Points & YAML        | Schnell und ohne Core-Fork erweiterbar               |
+| Erweiterbarkeit | Plugins via Service YAML Import        | Schnell und ohne Core-Fork erweiterbar               |
 
 ---
