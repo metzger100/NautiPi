@@ -7,10 +7,10 @@
 Viele Bootscrews möchten heute die Vorteile der Digitalisierung nutzen: Navigation, Sensordaten, Wetter, Musik und mehr – alles möglichst einfach, modular und unabhängig von proprietären Komplettlösungen. Hier setzt NautiPi an:
 
 * **Für Anwender (Segler):**
-  NautiPi macht den Einstieg in den Raspberry Pi Bordcomputer so einfach wie möglich. Ohne Linux-Kenntnisse und ohne komplexe Installationsroutinen kann jeder ein modernes, sicheres und wartbares Bord-IT-System aufsetzen. Ein Einrichtungsassistent führt Schritt für Schritt von der WLAN- und Hotspot-Einrichtung bis hin zur Installation und Konfiguration beliebter Bord-Services wie AvNav oder SignalK. Das alles läuft direkt im Browser – ganz ohne Terminal-Befehle. Sicherheitsfeatures wie HTTPS, Nutzerverwaltung und Firewall sorgen für Schutz und sorgenfreien Betrieb an Bord und auf See. Offline-Betrieb, progressive Web App (PWA) Funktionalität erhöhen die Bedienbarkeit im Bordalltag.
+  NautiPi macht den Einstieg in den Raspberry Pi Bordcomputer so einfach wie möglich. Ohne Linux-Kenntnisse und ohne komplexe Installationsroutinen kann jeder ein modernes, sicheres und wartbares Bord-IT-System aufsetzen. Ein Einrichtungsassistent führt Schritt für Schritt von der WLAN- und Hotspot-Einrichtung bis hin zur Installation und Konfiguration beliebter Bord-Services wie AvNav oder SignalK. Das alles läuft direkt im Browser – ganz ohne Terminal-Befehle.
 
 * **Für Entwickler:**
-  NautiPi ist ein offenes, modernes und modulares Framework zur Verwaltung und Integration von Marine-Softwareprojekten. Über standardisierte, validierte YAML-Deskriptoren können neue Services ohne Core-Fork oder tiefen Code-Eingriff eingebunden werden. Plugins werden wie die nativen Service-Yamls behandelt können aber über die WebUI importiert werden. Eine anschauliche, stets aktuelle Entwicklerdokumentation (Markdown, OpenAPI, Mermaid-Diagramme) machen die Mitarbeit einfach und nachhaltig.
+  NautiPi ist ein offenes, modernes und modulares Framework zur Verwaltung und Integration von Marine-Softwareprojekten. Über standardisierte YAML-Deskriptoren können neue Services ohne Core-Fork oder tiefen Code-Eingriff eingebunden werden. Plugins werden wie die nativen Service-Yamls behandelt können aber über die WebUI importiert werden. Eine anschauliche, stets aktuelle Entwicklerdokumentation machen die Mitarbeit einfach und nachhaltig.
 
 **NautiPi** ist damit ein wichtiger Schritt, die Digitalisierung und Automatisierung an Bord einfach, sicher und unabhängig zu gestalten – ein Gewinn für Segler, Entwickler und die Community gleichermaßen!
 
@@ -45,7 +45,6 @@ NautiPi ist modular aufgebaut und besteht aus zwei Kernkomponenten:
 
   * Benutzerfreundlich, intuitiv, einfach wartbar und leicht erweiterbar
   * Responsive für Desktop, Tablet und Smartphone
-  * Progressive Web App (PWA)-fähig für Offline-Nutzung
 
 ---
 
@@ -98,7 +97,7 @@ Das Backend wird in **Python** umgesetzt, da Python Standard auf Raspberry Pi OS
 
 * **Framework:** [FastAPI](https://fastapi.tiangolo.com/)
 
-  * Schnell, leichtgewichtig, modern (async), OpenAPI-Doku out-of-the-box
+  * Schnell, leichtgewichtig, modern (async)
   * REST-API & WebSocket nativ unterstützt:
 
 ```plaintext
@@ -113,7 +112,6 @@ POST /api/selfupdate
 GET /metrics
 ```
 
-  * Automatische API-Dokumentation und OpenAPI-Schema (redocly/swagger)
   * **Deployment:**
 
     * Uvicorn mit Worker/Async-Konfiguration geprüft (`--workers 1 --loop uvloop --http httptools` als Default, erweiterbar bei Mehrlast)
@@ -130,9 +128,9 @@ GET /metrics
 
 * **Security & Deployment:**
 
-  * **Auth**: lokaler User (PAM)
+  * **Auth**: lokaler Linux-User (oder PAM)
   * **OTA/Self-Updates:** git pull und restart
-  * **Logging:** structlog, Ringbuffer (Loki-Style) für persistente Logs, Download-Button im WebUI
+  * **Logging:** systemd tail logs, Download-Button im WebUI
 
 * **Installation als Service (systemd):**
 
@@ -157,8 +155,8 @@ Für die WebUI kommt **SvelteKit** zum Einsatz:
 * Service-Installations- und Verwaltungsoberfläche (mit Plugin-Unterstützung)
 * Konfigurationseditor pro Service (YAML-Deskriptor steuert, welche Optionen editierbar sind)
 * Zentrale Log-Ansicht (Systemd-Logs via Tail auslesen, Download für Support)
-* Self-Update-Button, Anzeige Systemstatus
-* Plugins: Drittanbieter können ihre Service-YAMLs bereitstellen, die über das WebUI importiert werden
+* Self-Update-Button
+* Plugins: Drittanbieter können ihre Service-YAMLs bereitstellen, die über das WebUI importiert und angezeigt werden
 
 ---
 
@@ -173,9 +171,8 @@ Für die WebUI kommt **SvelteKit** zum Einsatz:
 ## 🔒 Security & Updates
 
 * **Login/Authentifizierung** PAM-Login
-* **OTA/Self-Updates** via GitHub Releases und Self-Update-Button im WebUI (rsync-delta, restart)
-* **Log- und Fehleranalyse:** structlog, Ringbuffer für persistente Logs, zentrale Ansicht im WebUI, Logtail live via WebSocket
-* Gegebenenfalls https über nginx proxy manager
+* **OTA/Self-Updates** git pull und restart
+* **Log- und Fehleranalyse:** systemd logs via tail und Download für support
 
 ---
 
@@ -190,7 +187,6 @@ curl -sSL https://github.com/youruser/NautiPi/raw/main/setup/install.sh | bash
 * Skript installiert alle Abhängigkeiten
 * Hotspot automatisch aktiviert (via `hostapd` + `dnsmasq`)
 * Systemd-Service eingerichtet und startet automatisch
-* TLS/HTTPS direkt im Setup aktiviert, Zugangsdaten im Wizard vergeben
 
 ---
 
