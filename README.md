@@ -131,7 +131,7 @@ GET /metrics
 * **Security & Deployment:**
 
   * **Auth**: lokaler User (PAM)
-  * **OTA/Self-Updates:** Rolling Release via GitHub Releases, rsync-Delta-Updates (Fallback auf Full Download, Checksummen + Minisign-Signatur)
+  * **OTA/Self-Updates:** git pull und restart
   * **Logging:** structlog, Ringbuffer (Loki-Style) für persistente Logs, Download-Button im WebUI
 
 * **Installation als Service (systemd):**
@@ -146,10 +146,7 @@ GET /metrics
 Für die WebUI kommt **SvelteKit** zum Einsatz:
 
 * **SvelteKit**
-
   * Modern, performant, intuitiv und einfach zu erweitern
-  * Deployment als statisches Bundle über Caddy/nginx Reverse Proxy (gleichzeitig TLS/HTTPS)
-  * Progressive Web App (PWA): Offline-Nutzung an Bord ohne Internet
 * **Styling**: TailwindCSS (schnell, responsive, modern)
 * **Design-System:** Gemeinsame Komponentenbibliothek (Tailwind + Radix/Headless UI), Styles und Tokens zentral gepflegt (Look & Feel bleibt einheitlich)
 * **API-Kommunikation:** Axios oder Fetch
@@ -159,9 +156,9 @@ Für die WebUI kommt **SvelteKit** zum Einsatz:
 * Step-by-Step Onboarding/Wizard (WLAN, Hotspot, User, SSH, Updates…)
 * Service-Installations- und Verwaltungsoberfläche (mit Plugin-Unterstützung)
 * Konfigurationseditor pro Service (YAML-Deskriptor steuert, welche Optionen editierbar sind)
-* Zentrale Log-Ansicht (Ringbuffer, Live Logtail via WebSocket, Download für Support)
+* Zentrale Log-Ansicht (Systemd-Logs via Tail auslesen, Download für Support)
 * Self-Update-Button, Anzeige Systemstatus
-* Plugin-Galerie: Drittanbieter können ihre Service-YAMLs bereitstellen, die über das WebUI importiert werden
+* Plugins: Drittanbieter können ihre Service-YAMLs bereitstellen, die über das WebUI importiert werden
 
 ---
 
@@ -178,6 +175,7 @@ Für die WebUI kommt **SvelteKit** zum Einsatz:
 * **Login/Authentifizierung** PAM-Login
 * **OTA/Self-Updates** via GitHub Releases und Self-Update-Button im WebUI (rsync-delta, restart)
 * **Log- und Fehleranalyse:** structlog, Ringbuffer für persistente Logs, zentrale Ansicht im WebUI, Logtail live via WebSocket
+* Gegebenenfalls https über nginx proxy manager
 
 ---
 
@@ -199,8 +197,7 @@ curl -sSL https://github.com/youruser/NautiPi/raw/main/setup/install.sh | bash
 ## 📖 Dokumentation & Entwicklerfreundlichkeit:
 
 * **Markdown-Dokumentation** im `docs`-Ordner des Projekts
-* **OpenAPI-Schema** (Redocly/Swagger) für REST-API
-* **Mermaid-Diagramme** für Architektur/Workflow
+* **OpenAPI-Schema** für REST-API
 * Beispiel-YAML für Drittanbieter bereitstellen (Plugin-Entwicklung)
 * Plugin-Cookbook (Hello-World-Plugin) als Doku-Vorlage
 * GitHub-Wiki oder GitHub-Pages
