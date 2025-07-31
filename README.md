@@ -7,10 +7,10 @@
 Viele Bootscrews möchten heute die Vorteile der Digitalisierung nutzen: Navigation, Sensordaten, Wetter, Musik und mehr – alles möglichst einfach, modular und unabhängig von proprietären Komplettlösungen. Hier setzt NautiPi an:
 
 * **Für Anwender (Segler):**
-  NautiPi macht den Einstieg in den Raspberry Pi Bordcomputer so einfach wie möglich. Ohne Linux-Kenntnisse und ohne komplexe Installationsroutinen kann jeder ein modernes, sicheres und wartbares Bord-IT-System aufsetzen. Ein Einrichtungsassistent führt Schritt für Schritt von der WLAN- und Hotspot-Einrichtung bis hin zur Installation und Konfiguration beliebter Bord-Services wie AvNav oder SignalK. Das alles läuft direkt im Browser – ganz ohne Terminal-Befehle. Sicherheitsfeatures wie HTTPS, Nutzerverwaltung und Firewall sorgen für Schutz und sorgenfreien Betrieb an Bord und auf See. Offline-Betrieb, progressive Web App (PWA) Funktionalität und Backup-/Restore-Optionen erhöhen die Ausfallsicherheit und Bedienbarkeit im Bordalltag.
+  NautiPi macht den Einstieg in den Raspberry Pi Bordcomputer so einfach wie möglich. Ohne Linux-Kenntnisse und ohne komplexe Installationsroutinen kann jeder ein modernes, sicheres und wartbares Bord-IT-System aufsetzen. Ein Einrichtungsassistent führt Schritt für Schritt von der WLAN- und Hotspot-Einrichtung bis hin zur Installation und Konfiguration beliebter Bord-Services wie AvNav oder SignalK. Das alles läuft direkt im Browser – ganz ohne Terminal-Befehle. Sicherheitsfeatures wie HTTPS, Nutzerverwaltung und Firewall sorgen für Schutz und sorgenfreien Betrieb an Bord und auf See. Offline-Betrieb, progressive Web App (PWA) Funktionalität erhöhen die Bedienbarkeit im Bordalltag.
 
 * **Für Entwickler:**
-  NautiPi ist ein offenes, modernes und modulares Framework zur Verwaltung und Integration von Marine-Softwareprojekten. Über standardisierte, validierte YAML-Deskriptoren können neue Services ohne Core-Fork oder tiefen Code-Eingriff eingebunden werden. Plugins und eigene Services können nach einer klaren Plugin-Spezifikation samt Lifecycle-Hooks, Version-Constraints und validierter Schnittstelle entwickelt werden – Core-Stabilität bleibt stets erhalten. Automatische Tests, Code- und YAML-Linting, sowie eine anschauliche, stets aktuelle Entwicklerdokumentation (Markdown, OpenAPI, Mermaid-Diagramme) machen die Mitarbeit einfach und nachhaltig.
+  NautiPi ist ein offenes, modernes und modulares Framework zur Verwaltung und Integration von Marine-Softwareprojekten. Über standardisierte, validierte YAML-Deskriptoren können neue Services ohne Core-Fork oder tiefen Code-Eingriff eingebunden werden. Plugins werden wie die nativen Service-Yamls behandelt können aber über die WebUI importiert werden. Eine anschauliche, stets aktuelle Entwicklerdokumentation (Markdown, OpenAPI, Mermaid-Diagramme) machen die Mitarbeit einfach und nachhaltig.
 
 **NautiPi** ist damit ein wichtiger Schritt, die Digitalisierung und Automatisierung an Bord einfach, sicher und unabhängig zu gestalten – ein Gewinn für Segler, Entwickler und die Community gleichermaßen!
 
@@ -37,10 +37,9 @@ NautiPi ist modular aufgebaut und besteht aus zwei Kernkomponenten:
 
 * **Backend:**
 
-  * Verwaltung von Systemdiensten, Installation, Konfiguration, Updates, Sicherheit, Logging, und automatischer Migration bei Breaking Changes
+  * Verwaltung von Systemdiensten, Installation, Konfiguration, Updates, Sicherheit und Logging
   * Kommunikation über REST-API/WebSocket (Single Source of Truth)
-  * Verwaltung über standardisierte, versionierte und validierte YAML-Beschreibungsdateien pro Service/Plugin mit Migrations-Layer
-  * Secrets wie Passwörter/JWT-Keys werden nicht in YAML gespeichert, sondern in einem verschlüsselten Vault (z.B. age, sops)
+  * Verwaltung über standardisierte und versionierte YAML-Beschreibungsdateien pro Service/Plugin
 
 * **WebUI (Frontend):**
 
@@ -63,8 +62,7 @@ nautipi/
 │   │   ├── system.py
 │   │   ├── auth.py
 │   │   ├── security.py
-│   │   ├── plugin_manager.py
-│   │   └── vault.py
+│   │   └── plugin_manager.py
 │   ├── services/
 │   │   ├── avnav.yml
 │   │   ├── signalk.yml
@@ -74,12 +72,7 @@ nautipi/
 │   ├── api/
 │   │   └── rest_api.py
 │   ├── main.py
-│   ├── logging.py
-│   ├── metrics.py
-│   ├── migrations/
-│   │   └── (YAML-Schema-Migrations)
-│   ├── pyproject.toml         # Poetry für Reproducibility
-│   └── sbom/                  # CycloneDX SBOM aus CI
+│   └── logging.py
 │
 ├── frontend/
 │   └── webui/
@@ -91,9 +84,6 @@ nautipi/
 │
 ├── docs/
 │   └── (Dokumentation & Entwickleranleitung, Plugin Cookbook)
-│
-├── .devcontainer/
-│   └── devcontainer.json      # Für VS Code/Podman
 │
 └── setup/
     ├── install.sh
@@ -132,52 +122,22 @@ GET /metrics
 * **Serviceverwaltung via YAML**:
 
   * Jeder Service (AvNav, SignalK, Plugins) erhält eine eigene YAML-Beschreibungsdatei mit semver-Header
-  * Validierung der YAML-Dateien mittels JSON-Schema (`pydantic`, `pykwalify`)
-  * **Migrations-Layer:** Automatische Migration der YAMLs bei Breaking Changes (z.B. via pydantic-Revision, semver im Header)
 
 * **Plugin-System:**
 
-  * Plugins via Python Entry Points
-  * Plugin-Spec inkl. README, pydantic-Schema, Lifecycle-Hooks, Version-Constraints
-  * Erweiterungen bleiben rückwärtskompatibel und update-sicher
-
-* **CLI**
-
-  * Hook-basiertes CLI (`nautipi [install|update|tail]`), REST-Calls werden für Skripting/Automatisierung gewrapped
-
-* **Python-Bibliotheken:**
-
-  * fastapi
-  * uvicorn\[standard]
-  * pyyaml
-  * python-dotenv
-  * pydantic
-  * structlog
-  * poetry (für Dependency/Build Management)
-  * requests
-  * subprocess
-  * pluggy (für Plugins)
-  * sops/age (Secrets Vault)
-  * prometheus\_client (Metrics Endpoint)
+  * Plugins via yaml import.
+  * Plugins sind identisch wie die service yamls, nur kommen diese nicht mit dem core package mit
 
 * **Security & Deployment:**
 
   * **Auth**: lokaler User (PAM)
-  * **Secrets-Vault:** Passwords/Keys werden in einem verschlüsselten File gespeichert (Age/SOPS), nie im YAML
   * **OTA/Self-Updates:** Rolling Release via GitHub Releases, rsync-Delta-Updates (Fallback auf Full Download, Checksummen + Minisign-Signatur)
   * **Logging:** structlog, Ringbuffer (Loki-Style) für persistente Logs, Download-Button im WebUI
-  * **Metrics:** `/metrics`-Endpoint für Prometheus/Alerting an Bord
 
 * **Installation als Service (systemd):**
 
   * Automatische Einrichtung bei Installation
   * Self-Update-Mechanismus über GitHub Releases
-
-* **Dev-Experience:**
-
-  * Dev-Container (`.devcontainer.json`) für schnellen Einstieg
-  * Pre-commit Hooks (ruff, black, mypy, pyproject-tasks)
-  * Automatisierte Tests, Linting und SBOM in CI/CD
 
 ---
 
@@ -198,10 +158,9 @@ Für die WebUI kommt **SvelteKit** zum Einsatz:
 
 * Step-by-Step Onboarding/Wizard (WLAN, Hotspot, User, SSH, Updates…)
 * Service-Installations- und Verwaltungsoberfläche (mit Plugin-Unterstützung)
-* Konfigurationseditor pro Service (YAML-Deskriptor steuert, welche Optionen editierbar sind, Validation und Migrations-Layer)
+* Konfigurationseditor pro Service (YAML-Deskriptor steuert, welche Optionen editierbar sind)
 * Zentrale Log-Ansicht (Ringbuffer, Live Logtail via WebSocket, Download für Support)
 * Self-Update-Button, Anzeige Systemstatus
-* Metrics/Health-Status im Dashboard
 * Plugin-Galerie: Drittanbieter können ihre Service-YAMLs bereitstellen, die über das WebUI importiert werden
 
 ---
@@ -219,8 +178,6 @@ Für die WebUI kommt **SvelteKit** zum Einsatz:
 * **Login/Authentifizierung** PAM-Login
 * **OTA/Self-Updates** via GitHub Releases und Self-Update-Button im WebUI (rolling release, rsync-delta, Checksummen-Validierung, Minisign)
 * **Log- und Fehleranalyse:** structlog, Ringbuffer für persistente Logs, zentrale Ansicht im WebUI, Logtail live via WebSocket
-* **Secrets-Vault:** SOPS/Age für verschlüsselte Speicherung sensibler Daten, niemals im Klartext im YAML
-* **Metrics:** Prometheus-Endpoint `/metrics`
 
 ---
 
@@ -232,11 +189,10 @@ Für die WebUI kommt **SvelteKit** zum Einsatz:
 curl -sSL https://github.com/youruser/NautiPi/raw/main/setup/install.sh | bash
 ```
 
-* Skript installiert alle Abhängigkeiten (Python, Poetry, FastAPI, nginx/Caddy, systemd-unit)
+* Skript installiert alle Abhängigkeiten
 * Hotspot automatisch aktiviert (via `hostapd` + `dnsmasq`)
 * Systemd-Service eingerichtet und startet automatisch
 * TLS/HTTPS direkt im Setup aktiviert, Zugangsdaten im Wizard vergeben
-* Firewall und Fail2Ban mit sicheren Presets aktiviert
 
 ---
 
@@ -249,19 +205,5 @@ curl -sSL https://github.com/youruser/NautiPi/raw/main/setup/install.sh | bash
 * Plugin-Cookbook (Hello-World-Plugin) als Doku-Vorlage
 * GitHub-Wiki oder GitHub-Pages
 * **Automatische Dokumentation** aus API & YAML (Markdown, Mermaid, Redocly)
-
----
-
-## ✅ Zusammenfassung der ausgewählten Technologien:
- 
-| Bereich         | Technologie                            | Gründe                                               |
-| --------------- | -------------------------------------- | ---------------------------------------------------- |
-| Backend         | Python + FastAPI + Poetry              | Schlank, performant, REST/API-unterstützt            |
-| Web Frontend    | SvelteKit + TailwindCSS + PWA          | Einfach, modern, wartbar, wenig Overhead             |
-| Konfiguration   | YAML + Schema-Validation + Migration   | Klar, minimalistisch, fehlertolerant, update-sicher  |
-| Installation    | Shellskript                            | Einfach, minimalistisch, wartungsfreundlich          |
-| Sicherheit      | Auth, Vault                            | Sichere und nachvollziehbare Basis                   |
-| Logging         | structlog, Ringbuffer, Web-Logtail     | Schnelle Fehlersuche, Support                        |
-| Erweiterbarkeit | Plugins via Service YAML Import        | Schnell und ohne Core-Fork erweiterbar               |
 
 ---
