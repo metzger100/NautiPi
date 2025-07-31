@@ -176,7 +176,7 @@ Für die WebUI kommt **SvelteKit** zum Einsatz:
 ## 🔒 Security & Updates
 
 * **Login/Authentifizierung** PAM-Login
-* **OTA/Self-Updates** via GitHub Releases und Self-Update-Button im WebUI (rolling release, rsync-delta, Checksummen-Validierung, Minisign)
+* **OTA/Self-Updates** via GitHub Releases und Self-Update-Button im WebUI (rsync-delta, restart)
 * **Log- und Fehleranalyse:** structlog, Ringbuffer für persistente Logs, zentrale Ansicht im WebUI, Logtail live via WebSocket
 
 ---
