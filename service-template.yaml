@@ -37,7 +37,6 @@ spec:
 
   service:                                                      # required – How the service is managed/run (start/stop/status)
     type: "<systemd|docker|docker-compose|process|custom|none>" # required – Backend type (only one active per service)
-    user: "<username>"                                          # optional – Linux user to run as (default: nautipi or root)
     # Use ONLY ONE of the following blocks according to type:
     systemd:
       unit: "<service.service>"              # Name of systemd unit/service (for type: systemd)
