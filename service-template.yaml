@@ -14,7 +14,7 @@ metadata:
   author: "<Author or Project>"               # optional – Name or project (shown in UI, for credits)
   homepage: "<https://project.url>"           # optional – Project homepage or main website
   documentation: "<https://docs.url>"         # optional – Link to online docs/manual
-  icon: "<icon.svg|/local/path|data:image/svg+xml;...>" # optional – SVG icon (inline, file, or URL)
+  icon: "<icon.svg|/local/path|data:image/svg+xml;...>"        # optional – SVG icon (inline, file, or URL)
   license: "MIT"                              # optional – License (e.g. MIT, GPL-3.0)
   category: "<navigation|sensor|utility|media|system|custom>"  # optional – Category shown in UI
 
@@ -22,7 +22,7 @@ spec:
 
   lifecycle:                                # required – All install/update/remove steps
     preInstall:
-      commands: []                          # optional – Commands/scripts to run before install
+      commands: []                          # optional – Commands/scripts to run before install (e.g. pull docker compose file, /opt/<service>/docker-compose.yml)
     install:
       commands: []                          # required – List of shell commands or scripts to install the service
     postInstall:
@@ -48,21 +48,21 @@ spec:
         - 3000:3000
       volumes:
         - /opt/<service>:/data
-      env:                                   # optional – Environment variables
+      env:                                   # Environment variables
         VAR: "VALUE"
-      envFile: "/opt/<service>/.env"         # optional – Path to .env file
+      envFile: "/opt/<service>/.env"         # Path to .env file
     dockerCompose:
-      composeFile: "/opt/<service>/docker-compose.yml" # optional – docker-compose.yml file
-      envFile: "/opt/<service>/.env"                   # optional – Path to .env file
+      composeFile: "/opt/<service>/docker-compose.yml" # docker-compose.yml file
+      envFile: "/opt/<service>/.env"                   # Path to .env file
     process:
-      name: "<binary>"                       # optional – Name of binary/executable (for type: process)
-      args: "<args>"                         # optional – Arguments to pass
-      workingDir: "<path>"                   # optional – Working directory for process
-      pidFile: "<path/pidfile>"              # optional – PID file location
+      name: "<binary>"                       # Name of binary/executable (for type: process)
+      args: "<args>"                         # Arguments to pass
+      workingDir: "<path>"                   # Working directory for process
+      pidFile: "<path/pidfile>"              # PID file location
     custom:
-      start: "<start-cmd>"                   # optional – Command to start (for type: custom)
-      stop: "<stop-cmd>"                     # optional – Command to stop
-      status: "<status-cmd>"                 # optional – Command to check status
+      start: "<start-cmd>"                   # Command to start (for type: custom)
+      stop: "<stop-cmd>"                     # Command to stop
+      status: "<status-cmd>"                 # Command to check status
 
   statusChecks:                              # optional – List of checks to verify service health/status
     - type: "systemd"
@@ -82,11 +82,11 @@ spec:
 
   ports:                                     # optional – Exposed ports for UI or APIs (to check for incompatibilties)
     - port: 3000
-      protocol: "http"                       # required – Protocol (http, tcp, etc.)
-      description: "Web UI"                  # optional – Short description
-      editable: "true"                       # optional – Editable in the configs (in case of incompatibilies)
-      urlPath: "/"                           # optional – Base path (for web UIs)
-      tls: false                             # optional – Is TLS/SSL enabled
+      protocol: "http"                       # Protocol (http, tcp, etc.)
+      description: "Web UI"                  # Short description
+      editable: "true"                       # Editable in the configs (in case of incompatibilies)
+      urlPath: "/"                           # Base path (for web UIs)
+      tls: false                             # Is TLS/SSL enabled
     - port: 8080
       protocol: "tcp"
       description: "API Endpoint"
@@ -116,7 +116,7 @@ spec:
   actions:                                   # optional – Custom UI buttons for actions/commands
     - name: "Backup"
       command: "/usr/bin/<service>-backup"
-      confirm: true                          # optional – Show confirmation dialog
+      confirm: true                          # Show confirmation dialog
       description: "Backup configuration and data"
       icon: "archive"
     - name: "Restart"
