@@ -109,7 +109,7 @@ spec:
           - key: "auth.enabled"
             type: boolean
             description: "Enable authentication"
-      - path: "/path/to/sub-config.file"
+      - path: "/path/to/special-config.file"
         format: "file"
         description: "Sub configuration file"
 
