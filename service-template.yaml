@@ -1,5 +1,5 @@
 # =============================================================================
-# NautiPi Service YAML Template
+# NautiPi Service YAML Template 
 # =============================================================================
 
 apiVersion: nautipi.io/v1                     # required – API version, fixed for all services/plugins
@@ -20,20 +20,33 @@ metadata:
 
 spec:
 
-  lifecycle:                                # required – All install/update/remove steps
+  lifecycle:                                  # required – All install/update/remove steps
     preInstall:
-      commands: []                          # optional – Commands/scripts to run before install (e.g. pull docker compose file, /opt/nautipi/<service-id>/docker-compose.yml)
+      commands:                               # optional – Commands/scripts to run before install
+        - command: "<your-shell-command-here>"  # Command (do not include 'sudo'!)
+          sudo: false                           # true if this command needs root privileges, else false
     install:
-      commands: []                          # required – List of shell commands or scripts to install the service
+      commands:                               # required – List of shell commands or scripts to install the service
+        - command: "<install shell command 1>"  # Do NOT prefix with 'sudo'; set sudo: true if needed
+          sudo: true
+        - command: "<install shell command 2>"
+          sudo: false
     postInstall:
-      commands: []                          # optional – After install
+      commands:                               # optional – After install
+        - command: "<post-install shell command>"
+          sudo: false
     update:
       package_manager: "<apt|docker|docker-compose|npm|pip|custom>" # required – define the package manager for generic updates of all packages
-      custom_commands: []                   # required if custom – Update commands if custom method like git pulls
+      custom_commands:                        # required if custom – Update commands if custom method like git pulls
+        - command: "<update shell command>"
+          sudo: true
     uninstall:
-      commands: []                          # required – Uninstall/remove service
+      commands:                               # required – Uninstall/remove service
+        - command: "<uninstall shell command>"
+          sudo: true
     checkInstall:
-      command: "<which binary || test -f ...>"                  # required – Command to check if install succeeded (returns 0 if installed)
+      command: "<which binary || test -f ...>"  # required – Command to check if install succeeded (returns 0 if installed)
+      sudo: false                                # Set true if check command needs root
 
   service:                                                      # required – How the service is managed/run (start/stop/status)
     type: "<systemd|docker|docker-compose|process|custom|none>" # required – Backend type (only one active per service)
@@ -58,10 +71,13 @@ spec:
       args: "<args>"                         # Arguments to pass
       workingDir: "<path>"                   # Working directory for process
       pidFile: "<path/pidfile>"              # PID file location
-    custom:
-      start: "<start-cmd>"                   # Command to start (for type: custom)
-      stop: "<stop-cmd>"                     # Command to stop
-      status: "<status-cmd>"                 # Command to check status
+    custom_commands:
+      - start: "<start-cmd>"                   # Command to start (for type: custom)
+        sudo: false
+      - stop: "<stop-cmd>"                     # Command to stop
+        sudo: false
+      - status: "<status-cmd>"                 # Command to check status
+        sudo: false
 
   statusChecks:                              # optional – List of checks to verify service health/status
     - type: "systemd"
@@ -83,7 +99,7 @@ spec:
     - port: 3000
       protocol: "http"                       # Protocol (http, tcp, etc.)
       description: "Web UI"                  # Short description
-      editable: "true"                       # Editable in the configs (in case of incompatibilies)
+      editable: "true"                       # Editable in the configs (in case of incompatibilties)
       urlPath: "/"                           # Base path (for web UIs)
       tls: false                             # Is TLS/SSL enabled
     - port: 8080
@@ -101,7 +117,6 @@ spec:
         schema:                              # required – UI form schema for editing config (array)
           - key: "server.port"
             type: integer
-            required: true
             description: "HTTP Port"
             min: 1024
             max: 65535
@@ -115,11 +130,13 @@ spec:
   actions:                                   # optional – Custom UI buttons for actions/commands
     - name: "Backup"
       command: "/usr/bin/<service>-backup"
-      confirm: true                          # Show confirmation dialog
+      sudo: true                              # true if this action needs root
+      confirm: true                           # Show confirmation dialog
       description: "Backup configuration and data"
       icon: "archive"
     - name: "Restart"
       command: "<restart-cmd>"
+      sudo: true
       confirm: false
       description: "Restart the service"
       icon: "refresh"
