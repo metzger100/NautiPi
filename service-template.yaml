@@ -22,7 +22,7 @@ spec:
 
   lifecycle:                                # required – All install/update/remove steps
     preInstall:
-      commands: []                          # optional – Commands/scripts to run before install (e.g. pull docker compose file, /opt/<service>/docker-compose.yml)
+      commands: []                          # optional – Commands/scripts to run before install (e.g. pull docker compose file, /opt/nautipi/<service-id>/docker-compose.yml)
     install:
       commands: []                          # required – List of shell commands or scripts to install the service
     postInstall:
@@ -50,10 +50,10 @@ spec:
         - /opt/<service>:/data
       env:                                   # Environment variables
         VAR: "VALUE"
-      envFile: "/opt/<service>/.env"         # Path to .env file
+      envFile: "/opt/nautipi/<service-id>/.env"         # Path to .env file
     dockerCompose:
-      composeFile: "/opt/<service>/docker-compose.yml" # docker-compose.yml file
-      envFile: "/opt/<service>/.env"                   # Path to .env file
+      composeFile: "/opt/nautipi/<service-id>/docker-compose.yml" # docker-compose.yml file
+      envFile: "/opt/nautipi/<service-id>/.env"                   # Path to .env file
     process:
       name: "<binary>"                       # Name of binary/executable (for type: process)
       args: "<args>"                         # Arguments to pass
@@ -95,7 +95,7 @@ spec:
 
   config:                                    # optional – Configuration files & UI editor schema
     files:
-      - path: "/etc/<service>/config.yaml"   # required – Full path to config file
+      - path: "/path/to/config.file"   # required – Full path to config file
         format: "yaml|ini|json|xml|env|conf|properties|file" # required – Config format (file - no UI; but file editor)
         reload: "<restart-cmd>|<signal-cmd>|none"            # required – What happens after config edit (default: none)
         description: "Main configuration"    # optional – Description shown in editor
@@ -109,7 +109,7 @@ spec:
           - key: "auth.enabled"
             type: boolean
             description: "Enable authentication"
-      - path: "/etc/<service>/sub-config.conf"
+      - path: "/path/to/sub-config.file"
         format: "file"
         description: "Sub configuration file"
 
