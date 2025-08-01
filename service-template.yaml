@@ -1,5 +1,5 @@
 # =============================================================================
-# NautiPi Service/Plugin YAML Template
+# NautiPi Service YAML Template
 # =============================================================================
 
 apiVersion: nautipi.io/v1                     # required – API version, fixed for all services/plugins
@@ -16,14 +16,11 @@ metadata:
   documentation: "<https://docs.url>"         # optional – Link to online docs/manual
   icon: "<icon.svg|/local/path|data:image/svg+xml;...>" # optional – SVG icon (inline, file, or URL)
   license: "MIT"                              # optional – License (e.g. MIT, GPL-3.0)
-  tags:                                       # optional – List of keywords/tags (navigation, webui, open-source)
-    - navigation
-    - webui
-
-spec:
   category: "<navigation|sensor|utility|media|system|custom>"  # optional – Category shown in UI
 
-  lifecycle:                                                   # required – All install/update/remove steps
+spec:
+
+  lifecycle:                                # required – All install/update/remove steps
     preInstall:
       commands: []                          # optional – Commands/scripts to run before install
     install:
@@ -31,30 +28,32 @@ spec:
     postInstall:
       commands: []                          # optional – After install
     update:
-      commands: []                          # optional – Update commands
+      package_manager: "<apt|docker|docker-compose|npm|pip|custom>" # required – define the package manager for generic updates of all packages
+      custom_commands: []                   # required if custom – Update commands if custom method like git pulls
     uninstall:
       commands: []                          # required – Uninstall/remove service
     checkInstall:
-      command: "<which binary || test -f ...>" # optional – Command to check if install succeeded (returns 0 if installed)
+      command: "<which binary || test -f ...>"                  # required – Command to check if install succeeded (returns 0 if installed)
 
-  service:                                                     # required – How the service is managed/run (start/stop/status)
+  service:                                                      # required – How the service is managed/run (start/stop/status)
     type: "<systemd|docker|docker-compose|process|custom|none>" # required – Backend type (only one active per service)
-    user: "<username>"                                         # optional – Linux user to run as (default: nautipi or root)
+    user: "<username>"                                          # optional – Linux user to run as (default: nautipi or root)
     # Use ONLY ONE of the following blocks according to type:
     systemd:
-      unit: "<service.service>"              # optional – Name of systemd unit/service (for type: systemd)
+      unit: "<service.service>"              # Name of systemd unit/service (for type: systemd)
     docker:
-      image: "<repo/image:tag>"              # optional – Docker image (for type: docker)
-      container_name: "<containername>"      # optional – Docker container name
+      image: "<repo/image:tag>"              # Docker image (for type: docker)
+      container_name: "<containername>"      # Docker container name
       ports:
         - 3000:3000
       volumes:
         - /opt/<service>:/data
-      env:                                  # optional – Environment variables
+      env:                                   # optional – Environment variables
         VAR: "VALUE"
       envFile: "/opt/<service>/.env"         # optional – Path to .env file
     dockerCompose:
       composeFile: "/opt/<service>/docker-compose.yml" # optional – docker-compose.yml file
+      envFile: "/opt/<service>/.env"                   # optional – Path to .env file
     process:
       name: "<binary>"                       # optional – Name of binary/executable (for type: process)
       args: "<args>"                         # optional – Arguments to pass
@@ -98,10 +97,9 @@ spec:
     files:
       - path: "/etc/<service>/config.yaml"   # required – Full path to config file
         format: "yaml|ini|json|xml|env|conf|properties|file" # required – Config format (file - no UI; but file editor)
-        reload: "<restart-cmd>|<signal-cmd>|none"            # optional – What happens after config edit (default: none)
-        template: "<path/to/default-config>" # optional – Default template file
+        reload: "<restart-cmd>|<signal-cmd>|none"            # required – What happens after config edit (default: none)
         description: "Main configuration"    # optional – Description shown in editor
-        schema:                              # optional – UI form schema for editing config (array)
+        schema:                              # required – UI form schema for editing config (array)
           - key: "server.port"
             type: integer
             required: true
