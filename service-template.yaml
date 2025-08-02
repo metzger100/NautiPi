@@ -18,16 +18,46 @@ metadata:
   license: "MIT"                              # optional – License (e.g. MIT, GPL-3.0)
   category: "<navigation|sensor|utility|media|system|custom>"  # optional – Category shown in UI
 
+inputs:                                       # optional – User inputs required during installation/config
+  - name: "DB_USER"                           # required – Variable name (used in injection and commands)
+    label: "Database Username"                # required – Label shown in WebUI
+    type: "string"                            # required – string, password, integer, boolean, select
+    default: ""                               # optional – Default value
+    description: "The username for the database service"  # optional – Help text
+    validation: "^[a-zA-Z0-9_]+$"             # optional – Regex pattern for validation
+  - name: "DB_PASSWORD"
+    label: "Database Password"
+    type: "password"
+    default: ""
+    description: "Database user password"
+
+injection:                                    # optional – Rules to insert inputs into files/configs
+  - input: "DB_USER"                          # name from inputs section
+    target:
+      type: "env_file"                        # env_file | docker_compose | yaml | json | replace_string
+      file: "/opt/myservice/.env"             # path to file
+      key: "DB_USER"                          # for env/yaml/json: the key to set
+  - input: "DB_PASSWORD"
+    target:
+      type: "docker_compose"
+      file: "/opt/myservice/docker-compose.yml"
+      key_path: "services.db.environment.DB_PASSWORD"  # YAML key path
+  - input: "DB_PASSWORD"
+    target:
+      type: "replace_string"
+      file: "/opt/myservice/docker-compose.yml"
+      search: "DB_PASSWORD_PLACEHOLDER"       # String to replace with user value
+
 spec:
 
   lifecycle:                                  # required – All install/update/remove steps
     preInstall:
       commands:                               # optional – Commands/scripts to run before install
-        - command: "<your-shell-command-here>"  # Command (do not include 'sudo'!)
+        - command: "<your-shell-command-here>"  # You can use ${DB_USER} here
           sudo: false                           # true if this command needs root privileges, else false
     install:
       commands:                               # required – List of shell commands or scripts to install the service
-        - command: "<install shell command 1>"  # Do NOT prefix with 'sudo'; set sudo: true if needed
+        - command: "echo 'User: ${DB_USER}'"    # Placeholder replaced at runtime
           sudo: true
         - command: "<install shell command 2>"
           sudo: false
@@ -60,7 +90,7 @@ spec:
         - 3000:3000
       volumes:
         - /opt/<service>:/data
-      env:                                   # Environment variables
+      env:                                   # Environment variables (can use ${VAR_NAME})
         VAR: "VALUE"
       envFile: "/opt/nautipi/<service-id>/.env"         # Path to .env file
     dockerCompose:
@@ -68,7 +98,7 @@ spec:
       envFile: "/opt/nautipi/<service-id>/.env"                   # Path to .env file
     process:
       name: "<binary>"                       # Name of binary/executable (for type: process)
-      args: "<args>"                         # Arguments to pass
+      args: "<args>"                         # Arguments to pass (can use ${VAR_NAME})
       workingDir: "<path>"                   # Working directory for process
       pidFile: "<path/pidfile>"              # PID file location
     custom_commands:
@@ -78,6 +108,7 @@ spec:
         sudo: false
       - status: "<status-cmd>"                 # Command to check status
         sudo: false
+        expect: "<Regex|OK>"
 
   statusChecks:                              # optional – List of checks to verify service health/status
     - type: "systemd"
