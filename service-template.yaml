@@ -100,11 +100,11 @@ spec:
   #     serviceNotInstalled: "mosquitto"        # optional
   #     fileExists: "/etc/my.conf"              # or ["/a","/b"]
   #     cmd: "test -S /var/run/docker.sock"     # shell returns 0 → true
-  # - [NEW] You may also use version constraints:
+  # - You may also use version constraints:
   #     serviceInstalled:
   #       - id: "signalk"
   #         version: ">=2.0.0"                  # Only run if installed AND version matches
-  # - [NEW] Optional OR support:
+  # - Optional OR support:
   #     onlyIfAny:                              # Command runs if ANY listed condition passes
   #       - serviceInstalled: "signalk"
   #       - serviceInstalled: "avnav"
@@ -115,7 +115,7 @@ spec:
   #   * re-run later when optional dependencies appear/disappear,
   # - Put both "enable" and "disable" sides here using onlyIf.serviceInstalled / serviceNotInstalled if needed.
   #
-  # [NEW] Per-command robustness:
+  # Per-command robustness:
   # - timeoutSeconds: <int>        # Kill the command after N seconds (0=no timeout)
   # - continueOnError: true|false  # If true, do not stop the sequence on this command's failure
   # -----------------------------------------------------------------------------
