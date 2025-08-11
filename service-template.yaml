@@ -87,11 +87,25 @@ spec:
   category: "<navigation|sensor|system|utility|media|plugin>"   # required – UI grouping
   icon: "<icon-name>"                                           # optional – UI icon identifier
 
-  # -----------------------------------------------------------------------------
-  # lifecycle: How to install/update/remove and configure the service.
+    # -----------------------------------------------------------------------------
+  # lifecycle: How to install/update/remove/configure the service.
   # Each commands[].command is a shell line; set sudo:true if root is needed.
   # Use ${inputs.NAME} directly in commands.
   # Make commands IDEMPOTENT where possible (use '|| true', check existence, etc.).
+  #
+  # CONDITIONAL COMMANDS (onlyIf):
+  # - Add onlyIf to a command to guard it by simple conditions (all are AND-combined):
+  #   onlyIf:
+  #     serviceInstalled: "signalk"             # or ["signalk","avnav"]
+  #     serviceNotInstalled: "mosquitto"        # optional
+  #     fileExists: "/etc/my.conf"              # or ["/a","/b"]
+  #     cmd: "test -S /var/run/docker.sock"     # shell returns 0 → true
+  #
+  # RECONFIGURE STEP (enable/disable integrations & rollback):
+  # - lifecycle.reconfigure.commands holds idempotent integration steps that can be
+  #   * run after initial install,
+  #   * re-run later when optional dependencies appear/disappear,
+  # - Put both "enable" and "disable" sides here using onlyIf.serviceInstalled / serviceNotInstalled if needed.
   # -----------------------------------------------------------------------------
   lifecycle:
     preInstall:
@@ -101,52 +115,46 @@ spec:
 
     install:
       commands:                                # required – actual installation steps
+        - command: "<install command 1>"
+          sudo: true
+        - command: "<install command 2>"
+          sudo: true
         # Examples:
         # - command: "apt-get install -y avnav"
         #   sudo: true
         # - command: "docker pull signalk/signalk-server:latest"
         #   sudo: true
-        - command: "<install command 1>"
-          sudo: true
-        - command: "<install command 2>"
-          sudo: true
 
     postInstall:
       commands:                                # optional – config/enable/start after install
-        # Tips:
-        # - Quote user values that may contain spaces: '--user \"${inputs.ADMIN_USER}\"'
-        # - Configure files via sed/xmlstarlet/yq, or call a small helper script.
-        # - Example (docker run using interpolated port & creds):
-        # - command: >
-        #     docker run -d --restart unless-stopped --name mysvc
-        #     -p ${inputs.WEB_PORT}:3000
-        #     -e ADMINUSER=${inputs.ADMIN_USER}:${inputs.ADMIN_PASS}
-        #     -v /opt/mysvc:/data myimage:latest
+        # - command: "systemctl enable --now <service>"
         #   sudo: true
-        # - command: "systemctl restart mysvc || true"
+
+
+    reconfigure:    # Re-run-able, condition-aware config/integration step
+      commands:
+        # --- EXAMPLE: Enable integration when SignalK is present
+        # - command: "/usr/local/bin/enable-signalk --host 127.0.0.1 --port ${inputs.SIGNALK_PORT}"
         #   sudo: true
-        # - command: "<post-install command or script>"
+        #   onlyIf:
+        #     serviceInstalled: "signalk"
+        #
+        # --- EXAMPLE: Disable integration (rollback) when SignalK is absent
+        # - command: "/usr/local/bin/disable-signalk"
         #   sudo: true
+        #   onlyIf:
+        #     serviceNotInstalled: "signalk"
 
     update:
       package_manager: "<apt|docker|docker-compose|npm|pip|custom>"  # required – how to update
-      # If package_manager != custom, core can do generic updates (e.g., apt-get upgrade mypkg).
-      # For custom flows (git pull, special CLI), list commands here:
       custom_commands:
-        # - command: "docker pull myimage:latest && docker restart mysvc"
-        #   sudo: true
         - command: "<update command>"
           sudo: true
+        # - command: "docker pull myimage:latest && docker restart mysvc"
+        #   sudo: true
 
     uninstall:
       commands:                                # required – clean removal (stop, rm files/containers)
-        # Make it idempotent: ignore-not-found, use || true
-        # - command: "systemctl stop mysvc || true"
-        #   sudo: true
-        # - command: "docker rm -f mysvc || true"
-        #   sudo: true
-        # - command: "rm -rf /opt/mysvc"
-        #   sudo: true
         - command: "<uninstall command 1>"
           sudo: true
 
