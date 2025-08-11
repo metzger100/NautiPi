@@ -85,8 +85,7 @@ inputs:
 
 spec:
   category: "<navigation|sensor|system|utility|media|plugin>"   # required – UI grouping
-  icon: "<icon-name>"                                           # optional – UI icon identifier
-
+  icon: "<icon-name>"                                           # optional – UI icon identifier (name token)
   # -----------------------------------------------------------------------------
   # lifecycle: How to install/update/remove/configure the service.
   # Each commands[].command is a shell line; set sudo:true if root is needed.
@@ -96,9 +95,9 @@ spec:
   # CONDITIONAL COMMANDS (onlyIf):
   # - Add onlyIf to a command to guard it by simple conditions (all are AND-combined):
   #   onlyIf:
-  #     serviceInstalled: "signalk"             # or ["signalk","avnav"]
+  #     serviceInstalled: "signalk"             # or ["signalk","avnav"] or [{id:"signalk",version:">=2.0.0"}]
   #     serviceNotInstalled: "mosquitto"        # optional
-  #     fileExists: "/etc/my.conf"              # or ["/a","/b"]
+  #     fileExists: "/etc/my.conf"              # string OR ["pathA","pathB"] – ALL must exist
   #     cmd: "test -S /var/run/docker.sock"     # shell returns 0 → true
   # - You may also use version constraints:
   #     serviceInstalled:
@@ -271,8 +270,10 @@ spec:
   #   - reload (required): what to do after save
   #       "none" (default), or any shell command to run (e.g., "systemctl restart <svc>").
   #       Interpolation works: "docker restart ${inputs.CONTAINER_NAME}"
-  #   - reloadSudo (required): 
+  #   - reloadSudo (required): true|false – run the reload command with sudo
   #   - description (optional): text shown above the editor/form
+  #   - writeSudo/createIfMissing/backupSuffix/atomicWrite/owner/group/mode (optional):
+  #       safe write controls for system files (see example below)
   #
   # SCHEMA (per file)
   # - schema[]: array defining form fields mapped to keys inside the file.
@@ -307,8 +308,6 @@ spec:
         # Safe write options (recommended on system configs)
         writeSudo: true                 # Write file with sudo
         createIfMissing: true           # Create missing file/dirs before write
-        backupSuffix: ".bak"            # Save <file>.bak before overwrite
-        atomicWrite: true               # Write to temp + atomic rename
         owner: "root"                   # chown after write (optional)
         group: "root"                   # chgrp after write (optional)
         mode: "0644"                    # chmod after write (optional)
@@ -343,9 +342,6 @@ spec:
         reloadSudo: false
         # Safe write options also available for raw files:
         writeSudo: false               # Set true if file requires root to edit
-        createIfMissing: false
-        backupSuffix: ".bak"
-        atomicWrite: true
         description: "Main configuration"
 
   # -----------------------------------------------------------------------------
