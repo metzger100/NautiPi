@@ -339,7 +339,7 @@ spec:
     - title: "Web UI"
       url: "http://localhost:3000/"
       description: "Open the service's web interface"
-      webservice: true       # Link to the webservice itself
+      webservice: true       # Link to the webservice itself (major button)
     # - title: "Documentation"
     #   url: "<https://project.docs.url>"
     #   description: "Project documentation"
