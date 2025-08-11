@@ -1,188 +1,317 @@
 # =============================================================================
-# NautiPi Service YAML Template 
+# NautiPi Service YAML Template
+# =============================================================================
+# PURPOSE
+# - Declaratively describe how NautiPi installs, configures, runs, checks and links a service.
+# - Keep backend simple: most logic should be CLI commands in lifecycle.*.commands.
+#
+# STRING INTERPOLATION
+# - You can reference any user input from `inputs:` in ANY STRING field using: ${inputs.NAME}
+#   Example: "-p ${inputs.SIGNALK_PORT}:3000" or "http://localhost:${inputs.WEB_PORT}/"
+# - Interpolation happens AFTER YAML parse and BEFORE execution.
+# - Escaping: write \${inputs.NAME} to keep it literal (no interpolation).
+# - Types: interpolation yields strings; the runner will coerce obvious numeric/boolean fields
+#   (e.g. ports[].port) when possible.
+# - Validation: if an input is `required: true` but missing, the runner will fail with a clear error.
+# - Only add `inputs` that you actually need for install/config (every input becomes UI work).
+#
+# LOGGING & SECRETS
+# - inputs[].type: password OR inputs[].secret: true → mask values in logs/UI (e.g., ******).
+# - Never log full expanded commands containing secrets.
+#
 # =============================================================================
 
-apiVersion: nautipi.io/v1                     # required – API version, fixed for all services/plugins
-kind: Service                                 # required – Always "Service"
+apiVersion: nautipi.io/v1                   # required – API version (fixed)
+kind: Service                               # required – always "Service"
 
 metadata:
-  id: "<service-id>"                          # required – Unique, machine-readable identifier (no spaces/special chars)
-  displayName: "<Service Name>"               # required – Shown in UI, max. 30 characters
-  version: "1.0.0"                            # required – Semantic version (semver, e.g. 1.0.0)
-  description: |                              # required – Short description, 1–3 lines
-    <Short description of the service/plugin>
-  author: "<Author or Project>"               # optional – Name or project (shown in UI, for credits)
-  homepage: "<https://project.url>"           # optional – Project homepage or main website
-  documentation: "<https://docs.url>"         # optional – Link to online docs/manual
-  icon: "<icon.svg|/local/path|data:image/svg+xml;...>"        # optional – SVG icon (inline, file, or URL)
-  license: "MIT"                              # optional – License (e.g. MIT, GPL-3.0)
-  category: "<navigation|sensor|utility|media|system|custom>"  # optional – Category shown in UI
+  id: "<service-id>"                        # required – unique, machine-readable (a-z0-9-_)
+  displayName: "<Service Name>"             # required – short UI name (≤ 30 chars)
+  version: "1.0.0"                          # required – semver for THIS descriptor (not the app)
+  description: |                            # required – 1–3 lines: what this service does
+    <Short description of the service or plugin functionality>
+  author: "<Author or Project>"             # optional – credits in UI
+  homepage: "<https://project.url>"         # optional – docs/homepage
 
-inputs:                                       # optional – User inputs required during installation/config
-  - name: "DB_USER"                           # required – Variable name (used in injection and commands)
-    label: "Database Username"                # required – Label shown in WebUI
-    type: "string"                            # required – string, password, integer, boolean, select
-    default: ""                               # optional – Default value
-    description: "The username for the database service"  # optional – Help text
-    validation: "^[a-zA-Z0-9_]+$"             # optional – Regex pattern for validation
-  - name: "DB_PASSWORD"
-    label: "Database Password"
-    type: "password"
-    default: ""
-    description: "Database user password"
+# -----------------------------------------------------------------------------
+# inputs: Values collected from the user (once) and available everywhere via ${inputs.NAME}
+# Fields:
+# - name (required): machine name [A-Z0-9_ recommended]; used as ${inputs.NAME}
+# - label (required): shown in UI
+# - type (required): string | number | boolean | password
+# - default (optional): default value if user doesn't change it
+# - required (optional): true/false, default false
+# - secret (optional): true to mask in logs/UI (implied when type=password)
+# - description (optional): help text in UI
+# - pattern / min / max (optional): basic validation hints (optional)
+# Keep this section minimal; prefer sensible defaults.
+# -----------------------------------------------------------------------------
+inputs:
+  # Example inputs (delete if not needed):
+  # - name: "WEB_PORT"
+  #   label: "Web Port"
+  #   type: "number"
+  #   default: 3000
+  #   description: "HTTP port the service will listen on"
+  #
+  # - name: "ADMIN_USER"
+  #   label: "Admin User"
+  #   type: "string"
+  #   required: true
+  #
+  # - name: "ADMIN_PASS"
+  #   label: "Admin Password"
+  #   type: "password"
+  #   required: true
+  #   secret: true
+  #
+  # - name: "ENABLE_WRITEBACK"
+  #   label: "Allow write-back to upstream"
+  #   type: "boolean"
+  #   default: true
 
-injection:                                    # optional – Rules to insert inputs into files/configs
-  - input: "DB_USER"                          # name from inputs section
-    target:
-      type: "env_file"                        # env_file | docker_compose | yaml | json | replace_string
-      file: "/opt/myservice/.env"             # path to file
-      key: "DB_USER"                          # for env/yaml/json: the key to set
-  - input: "DB_PASSWORD"
-    target:
-      type: "docker_compose"
-      file: "/opt/myservice/docker-compose.yml"
-      key_path: "services.db.environment.DB_PASSWORD"  # YAML key path
-  - input: "DB_PASSWORD"
-    target:
-      type: "replace_string"
-      file: "/opt/myservice/docker-compose.yml"
-      search: "DB_PASSWORD_PLACEHOLDER"       # String to replace with user value
+# -----------------------------------------------------------------------------
+# injection (ADVANCED / OPTIONAL):
+# Prefer shell-based config in lifecycle.postInstall commands for MVP.
+# Use injection only if you must template files declaratively.
+# -----------------------------------------------------------------------------
+# injection:
+#   - input: "<INPUT_NAME>"
+#     target:
+#       type: "<env_file|docker_compose|replace_string>"
+#       file: "<path/to/file>"
+#       # for type=env_file: provide key
+#       key: "<ENV_KEY>"
+#       # for type=docker_compose: YAML path to set (dot notation)
+#       key_path: "services.app.environment.MY_VAR"
+#       # for type=replace_string: placeholder to replace
+#       search: "<PLACEHOLDER>"
 
 spec:
+  category: "<navigation|sensor|system|utility|media|plugin>"   # required – UI grouping
+  icon: "<icon-name>"                                           # optional – UI icon identifier
 
-  lifecycle:                                  # required – All install/update/remove steps
+  # -----------------------------------------------------------------------------
+  # lifecycle: How to install/update/remove and configure the service.
+  # Each commands[].command is a shell line; set sudo:true if root is needed.
+  # Use ${inputs.NAME} directly in commands via interpolation (see header).
+  # Make commands IDEMPOTENT where possible (use '|| true', check existence, etc.).
+  # -----------------------------------------------------------------------------
+  lifecycle:
     preInstall:
-      commands:                               # optional – Commands/scripts to run before install
-        - command: "<your-shell-command-here>"  # You can use ${DB_USER} here
-          sudo: false                           # true if this command needs root privileges, else false
+      commands:                                # optional – prepare system (repos, deps)
+        # - command: "apt-get update"
+        #   sudo: true
+
     install:
-      commands:                               # required – List of shell commands or scripts to install the service
-        - command: "echo 'User: ${DB_USER}'"    # Placeholder replaced at runtime
+      commands:                                # required – actual installation steps
+        # Examples:
+        # - command: "apt-get install -y avnav"
+        #   sudo: true
+        # - command: "docker pull signalk/signalk-server:latest"
+        #   sudo: true
+        - command: "<install command 1>"
           sudo: true
-        - command: "<install shell command 2>"
-          sudo: false
+        - command: "<install command 2>"
+          sudo: true
+
     postInstall:
-      commands:                               # optional – After install
-        - command: "<post-install shell command>"
-          sudo: false
+      commands:                                # optional – config/enable/start after install
+        # Tips:
+        # - Quote user values that may contain spaces: '--user \"${inputs.ADMIN_USER}\"'
+        # - Configure files via sed/xmlstarlet/yq, or call a small helper script.
+        # - Example (docker run using interpolated port & creds):
+        # - command: >
+        #     docker run -d --restart unless-stopped --name mysvc
+        #     -p ${inputs.WEB_PORT}:3000
+        #     -e ADMINUSER=${inputs.ADMIN_USER}:${inputs.ADMIN_PASS}
+        #     -v /opt/mysvc:/data myimage:latest
+        #   sudo: true
+        # - command: "systemctl restart mysvc || true"
+        #   sudo: true
+        # - command: "<post-install command or script>"
+        #   sudo: true
+
     update:
-      package_manager: "<apt|docker|docker-compose|npm|pip|custom>" # required – define the package manager for generic updates of all packages
-      custom_commands:                        # required if custom – Update commands if custom method like git pulls
-        - command: "<update shell command>"
+      package_manager: "<apt|docker|docker-compose|npm|pip|custom>"  # required – how to update
+      # If package_manager != custom, core can do generic updates (e.g., apt-get upgrade mypkg).
+      # For custom flows (git pull, special CLI), list commands here:
+      custom_commands:
+        # - command: "docker pull myimage:latest && docker restart mysvc"
+        #   sudo: true
+        - command: "<update command>"
           sudo: true
+
     uninstall:
-      commands:                               # required – Uninstall/remove service
-        - command: "<uninstall shell command>"
+      commands:                                # required – clean removal (stop, rm files/containers)
+        # Make it idempotent: ignore-not-found, use || true
+        # - command: "systemctl stop mysvc || true"
+        #   sudo: true
+        # - command: "docker rm -f mysvc || true"
+        #   sudo: true
+        # - command: "rm -rf /opt/mysvc"
+        #   sudo: true
+        - command: "<uninstall command 1>"
           sudo: true
+
     checkInstall:
-      command: "<which binary || test -f ...>"  # required – Command to check if install succeeded (returns 0 if installed)
-      sudo: false                                # Set true if check command needs root
+      command: "<which binary || test -f /path/to/installed/file>"   # required – exit 0 if installed
+      sudo: false
 
-  service:                                                      # required – How the service is managed/run (start/stop/status)
-    type: "<systemd|docker|docker-compose|process|custom|none>" # required – Backend type (only one active per service)
-    # Use ONLY ONE of the following blocks according to type:
+  # -----------------------------------------------------------------------------
+  # service: How NautiPi manages the running service (start/stop/status).
+  # Choose ONE type and fill its subsection. Others can be omitted.
+  # -----------------------------------------------------------------------------
+  service:
+    type: "<systemd|docker|docker-compose|process|custom|none>"   # required
+
     systemd:
-      unit: "<service.service>"              # Name of systemd unit/service (for type: systemd)
-    docker:
-      image: "<repo/image:tag>"              # Docker image (for type: docker)
-      container_name: "<containername>"      # Docker container name
-      ports:
-        - 3000:3000
-      volumes:
-        - /opt/<service>:/data
-      env:                                   # Environment variables (can use ${VAR_NAME})
-        VAR: "VALUE"
-      envFile: "/opt/nautipi/<service-id>/.env"         # Path to .env file
-    dockerCompose:
-      composeFile: "/opt/nautipi/<service-id>/docker-compose.yml" # docker-compose.yml file
-      envFile: "/opt/nautipi/<service-id>/.env"                   # Path to .env file
-    process:
-      name: "<binary>"                       # Name of binary/executable (for type: process)
-      args: "<args>"                         # Arguments to pass (can use ${VAR_NAME})
-      workingDir: "<path>"                   # Working directory for process
-      pidFile: "<path/pidfile>"              # PID file location
-    custom_commands:
-      - start: "<start-cmd>"                   # Command to start (for type: custom)
-        sudo: false
-      - stop: "<stop-cmd>"                     # Command to stop
-        sudo: false
-      - status: "<status-cmd>"                 # Command to check status
-        sudo: false
-        expect: "<Regex|OK>"
+      unit: "<service.service>"             # if type=systemd – unit name to manage
 
-  statusChecks:                              # optional – List of checks to verify service health/status
+    docker:
+      image: "<docker-repo/image:tag>"      # if type=docker – image to run
+      name: "<container_name>"              # optional – container name
+      ports:
+        - "3000:3000"                       # optional – host:container (can use ${inputs.WEB_PORT}:3000)
+      volumes:
+        # - "/host/path:/container/path"
+      env:                                  # optional – inline env for 'docker run'
+        # ENV_VAR: "value"
+      envFile:                              # optional – host env-file(s)
+        # - "/opt/<service>/.env"
+      args: "<additional docker run args>"  # optional – appended to 'docker run'
+
+    docker-compose:
+      file: "<path/to/docker-compose.yml>"  # if type=docker-compose – compose file
+      project: "<project-name>"             # optional – compose project (defaults to metadata.id)
+
+    process:
+      start: "<start-command>"              # if type=process – how to start
+      stop: "<stop-command>"                # how to stop
+      pidFile: "<path/to/pid.file>"         # optional – PID file for status
+      cwd: "<working-directory>"            # optional – working directory
+
+    custom:
+      start:                                # if type=custom – define explicit start/stop/status commands
+        - command: "<custom start command>"
+          sudo: true
+      stop:
+        - command: "<custom stop command>"
+          sudo: true
+      status:
+        - command: "<custom status command>"
+          sudo: true
+
+  # -----------------------------------------------------------------------------
+  # statusChecks: Define one or more health checks. All required checks must pass.
+  # Types:
+  # - systemd: { unit }
+  # - http:    { url, expect("200" or regex), timeout }
+  # - tcp:     { host, port }
+  # - process: { name }
+  # - custom:  { command, expect(regex) }
+  # Interpolation works in URLs/hosts/ports (e.g., http://localhost:${inputs.WEB_PORT}/)
+  # -----------------------------------------------------------------------------
+  statusChecks:
     - type: "systemd"
       unit: "<service.service>"
     - type: "http"
       url: "http://localhost:3000/status"
-      expect: "OK|200"
-      timeout: 3
-    - type: "tcp"
-      host: "localhost"
-      port: 3000
-    - type: "process"
-      name: "<binary>"
-    - type: "custom"
-      command: "<check-cmd>"
-      expect: "<Regex|OK>"
+      expect: "200"
+      timeout: 5
+    # - type: "tcp"
+    #   host: "localhost"
+    #   port: 1883
+    # - type: "process"
+    #   name: "<process-name>"
+    # - type: "custom"
+    #   command: "curl -fsS http://localhost:3000/health"
+    #   expect: "ok"
 
-  ports:                                     # optional – Exposed ports for UI or APIs (to check for incompatibilties)
+  # -----------------------------------------------------------------------------
+  # ports: Document used ports (for UI + conflict checks).
+  # Fields:
+  # - port (number or ${inputs.PORT})
+  # - protocol: "http" | "https" | "tcp" | "udp"
+  # - description: human-readable purpose
+  # - urlPath: optional default path for opening/checking (e.g., "/")
+  # - tls: true/false if https
+  # - editable: whether users may change this port in UI
+  # - interface: bind address, e.g., "0.0.0.0" (all) or "127.0.0.1" (local only)
+  # -----------------------------------------------------------------------------
+  ports:
     - port: 3000
-      protocol: "http"                       # Protocol (http, tcp, etc.)
-      description: "Web UI"                  # Short description
-      editable: "true"                       # Editable in the configs (in case of incompatibilties)
-      urlPath: "/"                           # Base path (for web UIs)
-      tls: false                             # Is TLS/SSL enabled
-    - port: 8080
-      protocol: "tcp"
-      description: "API Endpoint"
-      editable: "false"
-      interface: "127.0.0.1"
+      protocol: "http"
+      description: "Web Interface"
+      urlPath: "/"
+      tls: false
+      editable: false
+      interface: "0.0.0.0"
+    # - port: ${inputs.WEB_PORT}
+    #   protocol: "http"
+    #   description: "Web UI (configurable)"
+    #   editable: true
+    #   interface: "0.0.0.0"
 
-  config:                                    # optional – Configuration files & UI editor schema
-    files:
-      - path: "/path/to/config.file"   # required – Full path to config file
-        format: "yaml|ini|json|xml|env|conf|properties|file" # required – Config format (file - no UI; but file editor)
-        reload: "<restart-cmd>|<signal-cmd>|none"            # required – What happens after config edit (default: none)
-        description: "Main configuration"    # optional – Description shown in editor
-        schema:                              # required – UI form schema for editing config (array)
-          - key: "server.port"
-            type: integer
-            description: "HTTP Port"
-            min: 1024
-            max: 65535
-          - key: "auth.enabled"
-            type: boolean
-            description: "Enable authentication"
-      - path: "/path/to/special-config.file"
-        format: "file"
-        description: "Sub configuration file"
+  # -----------------------------------------------------------------------------
+  # config (ADVANCED / OPTIONAL):
+  # UI-managed config files. Prefer shell-based config in postInstall for MVP.
+  # If used:
+  # - name: label in UI
+  # - path: absolute path on host
+  # - editable: allow UI view/edit (read-only if false)
+  # - source: optional template content with ${inputs.*} placeholders
+  # -----------------------------------------------------------------------------
+  config:
+    # - name: "Main Configuration"
+    #   path: "/etc/<service>/config.conf"
+    #   description: "Primary service configuration."
+    #   editable: true
+    #   source: |
+    #     listen = ${inputs.WEB_PORT}
+    #     feature = enabled
 
-  actions:                                   # optional – Custom UI buttons for actions/commands
-    - name: "Backup"
-      command: "/usr/bin/<service>-backup"
-      sudo: true                              # true if this action needs root
-      confirm: true                           # Show confirmation dialog
-      description: "Backup configuration and data"
-      icon: "archive"
-    - name: "Restart"
-      command: "<restart-cmd>"
-      sudo: true
-      confirm: false
-      description: "Restart the service"
-      icon: "refresh"
+  # -----------------------------------------------------------------------------
+  # actions (OPTIONAL):
+  # Extra buttons in UI that run commands (backup, reset, etc.).
+  # NOTE: start/stop/restart for systemd/docker are usually handled automatically.
+  # Fields: name, command, sudo, confirm, description, icon
+  # -----------------------------------------------------------------------------
+  actions:
+    # - name: "Restart Service"
+    #   command: "systemctl restart <service>"
+    #   sudo: true
+    #   confirm: false
+    #   description: "Restart the service"
+    #   icon: "refresh"
 
-  links:                                     # optional – Useful external/internal links shown in UI
+    # - name: "Backup Config"
+    #   command: "/usr/bin/<service>-backup"
+    #   sudo: true
+    #   confirm: true
+    #   description: "Backup configuration and data"
+    #   icon: "archive"
+
+  # -----------------------------------------------------------------------------
+  # links: Helpful URLs shown in UI (e.g., Web UI, Docs).
+  # Use localhost or explicit host:port; the UI may rewrite to the device IP for convenience.
+  # Interpolation works (e.g., http://localhost:${inputs.WEB_PORT}/).
+  # -----------------------------------------------------------------------------
+  links:
     - title: "Web UI"
       url: "http://localhost:3000/"
-      description: "Go to service web interface"
-    - title: "API Docs"
-      url: "http://localhost:3000/docs"
+      description: "Open the service's web interface"
+    # - title: "Documentation"
+    #   url: "<https://project.docs.url>"
+    #   description: "Project documentation"
 
-  dependsOn:                                 # optional – Dependency management for other services/plugins
-    required:
-      - id: "<service-id>"
-        version: ">=1.0.0"
-    optional:
-      - id: "<service-id>"
-        version: ">=0.9.0"
+  # -----------------------------------------------------------------------------
+  # dependsOn: Declare relationships to other services by ID.
+  # - required: service MUST be present (installer may block until installed).
+  # - optional: service enhances functionality if present (no hard block).
+  # Version constraints are advisory (semver, e.g., >=1.0.0).
+  # NOTE: Declaration does not auto-install dependencies; it informs UI/flows.
+  # -----------------------------------------------------------------------------
+  dependsOn:
+    required: []   # e.g., [{ id: "database", version: ">=1.0.0" }]
+    optional: []   # e.g., [{ id: "signalk",  version: ">=1.0.0" }]
