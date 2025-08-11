@@ -224,3 +224,24 @@ NautiPi is the perfect complement to the ecosystem as a **modular boat service m
 | **Bareboat (BBN) OS** | Linux distro focused on onboard computers | Desktop GUI + touchscreen | SignalK & AvNav preinstalled |   |
 
 ---
+
+### Potential supported services:
+#### Navigation & Boot-spezifisch
+
+* **pypilot (Autopilot) Web-UI** – Autopilot steuern & kalibrieren per Browser; gut kombinierbar mit Signal-K/OpenPlotter.
+* **AIS-catcher** – AIS-Empfang mit RTL-SDR; bringt einen kleinen **Webserver** mit und gibt NMEA (UDP/HTTP/TCP) aus → perfekte Quelle für Signal-K/AvNav.
+* **OpenWebRX** – Web-SDR-Empfänger (mehrbenutzerfähig). Nützlich, wenn ihr SDR-Quellen an Bord nutzt (z. B. AIS/UKW-Monitoring).
+
+#### IoT/Automatisierung & Daten
+
+* **Node-RED** – Low-Code Flow-Editor im Browser; ideal für Datenflüsse zwischen Sensoren, MQTT und Signal-K.
+* **Eclipse Mosquitto (MQTT Broker)** – leichter MQTT-Broker; Standard-Baustein für Sensorik/Automation an Bord.
+* **InfluxDB** – Timeseries DB mit eigener Web-UI für Dashboards/Explorer; perfekt für Sensor-Historien (Motor, Strom, Wetter).
+* **Grafana** – Visualisierung/Alarmierung auf Basis InfluxDB/Prometheus/…; schöne Bord-Dashboards im Web.
+* **Home Assistant (Supervised)** – Zentrale Haus/Boot-Automation mit Web-UI; gut, wenn mehr als nur Marine-Daten verknüpft werden.
+
+#### System-Management & Netz
+
+* **Nginx Proxy Manager** – Einfache Reverse-Proxy-Oberfläche inkl. Let’s-Encrypt; ideal, um mehrere UIs sauber zu exposen.
+
+---
