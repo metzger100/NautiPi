@@ -253,23 +253,93 @@ spec:
     #   editable: true
     #   interface: "0.0.0.0"
 
+ 
   # -----------------------------------------------------------------------------
-  # config (ADVANCED / OPTIONAL):
-  # UI-managed config files. Prefer shell-based config in postInstall for MVP.
-  # If used:
-  # - name: label in UI
-  # - path: absolute path on host
-  # - editable: allow UI view/edit (read-only if false)
-  # - source: optional template content with ${inputs.*} placeholders
+  # config: (OPTIONAL) – Structured config files + UI editor schema
+  #
+  # GOAL
+  # - Provide a simple form-based editor for common config files (yaml/json/xml/ini/properties/env/conf).
+  #
+  # FILES
+  # - files[]: one or more config sources.
+  #   - path (required): absolute file path on host (strings support ${inputs.*})
+  #   - format (required): "yaml" | "json" | "xml" | "ini" | "properties" | "env" | "conf" | "file"
+  #       yaml/json: parsed with dot-paths (arrays via [index])
+  #       ini:       "section.key" or just "key" (no section)
+  #       properties: flat "key"
+  #       env:       flat "KEY" (KEY=VAL lines)
+  #       conf:      flat key=value (like sysconfig) – parser treats as simple map
+  #       xml:       XPath OR simplified path:
+  #                   - "root.child.grandchild" → element text
+  #                   - "root.child@attr"       → attribute
+  #                 (choose one convention for your project; see schema.key)
+  #       file:      raw text editor only (no schema-based fields)
+  #   - reload (required): what to do after save
+  #       "none" (default), or any shell command to run (e.g., "systemctl restart <svc>").
+  #       Interpolation works: "docker restart ${inputs.CONTAINER_NAME}"
+  #   - reloadSudo (required): 
+  #   - description (optional): text shown above the editor/form
+  #
+  # SCHEMA (per file)
+  # - schema[]: array defining form fields mapped to keys inside the file.
+  #   Field:
+  #     - key (required): path to value inside the file
+  #         yaml/json:     "server.port", "listeners[0].host"
+  #         ini:           "section.key" or "key"
+  #         properties/env/conf: "KEY"
+  #         xml:           XPath (e.g., "/config/server/port") OR simplified "config.server.port"
+  #                        use "@attr" for attributes, e.g., "server.@port"
+  #     - type (required): string | integer | number | boolean | password | select
+  #     - required (optional): true/false
+  #     - description (optional): help text
+  #     - default (optional): default if key absent (strings support ${inputs.*})
+  #     - min / max (optional): numbers only
+  #     - minLength / maxLength / pattern (optional): strings only (pattern is regex)
+  #     - enum (optional): array of allowed values (for select OR restrict string)
+  #     - enumNames (optional): labels for enum entries (UI nicety)
+  #
+  # NOTES / LIMITS
+  # - Comments in yaml/ini may be lost on write (parser dependent). Use format "file" if preserving exact text matters.
+  # - Arrays: use explicit indices (e.g., "servers[0].port") – MVP supports updating existing indices or creating simple paths.
+  # - Interpolation applies to all STRING fields (path, reload, defaults, etc.).
   # -----------------------------------------------------------------------------
   config:
-    # - name: "Main Configuration"
-    #   path: "/etc/<service>/config.conf"
-    #   description: "Primary service configuration."
-    #   editable: true
-    #   source: |
-    #     listen = ${inputs.WEB_PORT}
-    #     feature = enabled
+    files:
+      # Structured file with form schema
+      - path: "/etc/<service>/config.yaml"     # supports ${inputs.*}
+        format: "yaml"                          # yaml|ini|json|xml|env|conf|properties|file
+        reload: "systemctl restart <service>"   # "none" or a shell command (interpolation allowed)
+        reloadSudo: true
+        description: "Main configuration"
+        schema:
+          - key: "server.port"
+            type: integer
+            required: true
+            description: "HTTP Port"
+            min: 1024
+            max: 65535
+          - key: "auth.enabled"
+            type: boolean
+            description: "Enable authentication"
+          # Examples of other field types:
+          # - key: "auth.mode"
+          #   type: select
+          #   enum: ["none", "basic", "oauth2"]
+          #   enumNames: ["No auth", "Basic Auth", "OAuth 2.0"]
+          # - key: "admin.password"
+          #   type: password
+          #   required: false
+          #   description: "Admin password (leave blank to keep current)"
+          # - key: "listeners[0].host"
+          #   type: string
+          #   default: "0.0.0.0"
+
+      # Raw file (no form fields) – shows a simple text editor
+      - path: "/etc/<service>/sub-config.conf"
+        format: "file"
+        reload: "none"
+        reloadSudo: false
+        description: "Main configuration"
 
   # -----------------------------------------------------------------------------
   # actions (OPTIONAL):
