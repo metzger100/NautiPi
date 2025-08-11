@@ -8,17 +8,12 @@
 # STRING INTERPOLATION
 # - You can reference any user input from `inputs:` in ANY STRING field using: ${inputs.NAME}
 #   Example: "-p ${inputs.SIGNALK_PORT}:3000" or "http://localhost:${inputs.WEB_PORT}/"
-# - Interpolation happens AFTER YAML parse and BEFORE execution.
 # - Escaping: write \${inputs.NAME} to keep it literal (no interpolation).
 # - Types: interpolation yields strings; the runner will coerce obvious numeric/boolean fields
 #   (e.g. ports[].port) when possible.
 # - Validation: if an input is `required: true` but missing, the runner will fail with a clear error.
-# - Only add `inputs` that you actually need for install/config (every input becomes UI work).
-#
-# LOGGING & SECRETS
+# - Only add `inputs` that you actually need for install/config (every input becomes UI work which might confuse users).
 # - inputs[].type: password OR inputs[].secret: true → mask values in logs/UI (e.g., ******).
-# - Never log full expanded commands containing secrets.
-#
 # =============================================================================
 
 apiVersion: nautipi.io/v1                   # required – API version (fixed)
@@ -32,6 +27,7 @@ metadata:
     <Short description of the service or plugin functionality>
   author: "<Author or Project>"             # optional – credits in UI
   homepage: "<https://project.url>"         # optional – docs/homepage
+  icon: "<https://project.url/icon.jpg>"    # optional – icon of the project
 
 # -----------------------------------------------------------------------------
 # inputs: Values collected from the user (once) and available everywhere via ${inputs.NAME}
@@ -94,12 +90,12 @@ spec:
   # -----------------------------------------------------------------------------
   # lifecycle: How to install/update/remove and configure the service.
   # Each commands[].command is a shell line; set sudo:true if root is needed.
-  # Use ${inputs.NAME} directly in commands via interpolation (see header).
+  # Use ${inputs.NAME} directly in commands.
   # Make commands IDEMPOTENT where possible (use '|| true', check existence, etc.).
   # -----------------------------------------------------------------------------
   lifecycle:
     preInstall:
-      commands:                                # optional – prepare system (repos, deps)
+      commands:                                # optional – prepare system (repos, deps, docker)
         # - command: "apt-get update"
         #   sudo: true
 
@@ -227,32 +223,6 @@ spec:
     # - type: "custom"
     #   command: "curl -fsS http://localhost:3000/health"
     #   expect: "ok"
-
-  # -----------------------------------------------------------------------------
-  # ports: Document used ports (for UI + conflict checks).
-  # Fields:
-  # - port (number or ${inputs.PORT})
-  # - protocol: "http" | "https" | "tcp" | "udp"
-  # - description: human-readable purpose
-  # - urlPath: optional default path for opening/checking (e.g., "/")
-  # - tls: true/false if https
-  # - editable: whether users may change this port in UI
-  # - interface: bind address, e.g., "0.0.0.0" (all) or "127.0.0.1" (local only)
-  # -----------------------------------------------------------------------------
-  ports:
-    - port: 3000
-      protocol: "http"
-      description: "Web Interface"
-      urlPath: "/"
-      tls: false
-      editable: false
-      interface: "0.0.0.0"
-    # - port: ${inputs.WEB_PORT}
-    #   protocol: "http"
-    #   description: "Web UI (configurable)"
-    #   editable: true
-    #   interface: "0.0.0.0"
-
  
   # -----------------------------------------------------------------------------
   # config: (OPTIONAL) – Structured config files + UI editor schema
@@ -353,14 +323,12 @@ spec:
     #   sudo: true
     #   confirm: false
     #   description: "Restart the service"
-    #   icon: "refresh"
 
     # - name: "Backup Config"
     #   command: "/usr/bin/<service>-backup"
     #   sudo: true
     #   confirm: true
     #   description: "Backup configuration and data"
-    #   icon: "archive"
 
   # -----------------------------------------------------------------------------
   # links: Helpful URLs shown in UI (e.g., Web UI, Docs).
@@ -371,9 +339,11 @@ spec:
     - title: "Web UI"
       url: "http://localhost:3000/"
       description: "Open the service's web interface"
+      webservice: true       # Link to the webservice itself
     # - title: "Documentation"
     #   url: "<https://project.docs.url>"
     #   description: "Project documentation"
+    #   webservice: false
 
   # -----------------------------------------------------------------------------
   # dependsOn: Declare relationships to other services by ID.
