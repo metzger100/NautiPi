@@ -87,7 +87,7 @@ spec:
   category: "<navigation|sensor|system|utility|media|plugin>"   # required – UI grouping
   icon: "<icon-name>"                                           # optional – UI icon identifier
 
-    # -----------------------------------------------------------------------------
+  # -----------------------------------------------------------------------------
   # lifecycle: How to install/update/remove/configure the service.
   # Each commands[].command is a shell line; set sudo:true if root is needed.
   # Use ${inputs.NAME} directly in commands.
@@ -100,23 +100,39 @@ spec:
   #     serviceNotInstalled: "mosquitto"        # optional
   #     fileExists: "/etc/my.conf"              # or ["/a","/b"]
   #     cmd: "test -S /var/run/docker.sock"     # shell returns 0 → true
+  # - [NEW] You may also use version constraints:
+  #     serviceInstalled:
+  #       - id: "signalk"
+  #         version: ">=2.0.0"                  # Only run if installed AND version matches
+  # - [NEW] Optional OR support:
+  #     onlyIfAny:                              # Command runs if ANY listed condition passes
+  #       - serviceInstalled: "signalk"
+  #       - serviceInstalled: "avnav"
   #
   # RECONFIGURE STEP (enable/disable integrations & rollback):
   # - lifecycle.reconfigure.commands holds idempotent integration steps that can be
   #   * run after initial install,
   #   * re-run later when optional dependencies appear/disappear,
   # - Put both "enable" and "disable" sides here using onlyIf.serviceInstalled / serviceNotInstalled if needed.
+  #
+  # [NEW] Per-command robustness:
+  # - timeoutSeconds: <int>        # Kill the command after N seconds (0=no timeout)
+  # - continueOnError: true|false  # If true, do not stop the sequence on this command's failure
   # -----------------------------------------------------------------------------
   lifecycle:
     preInstall:
       commands:                                # optional – prepare system (repos, deps, docker)
         # - command: "apt-get update"
         #   sudo: true
+        #   timeoutSeconds: 60          # Optional timeout per command
+        #   continueOnError: false      # Continue even if this step fails
 
     install:
       commands:                                # required – actual installation steps
         - command: "<install command 1>"
           sudo: true
+          # timeoutSeconds: 300         # Example timeout
+          # continueOnError: false
         - command: "<install command 2>"
           sudo: true
         # Examples:
@@ -130,7 +146,6 @@ spec:
         # - command: "systemctl enable --now <service>"
         #   sudo: true
 
-
     reconfigure:    # Re-run-able, condition-aware config/integration step
       commands:
         # --- EXAMPLE: Enable integration when SignalK is present
@@ -142,6 +157,7 @@ spec:
         # --- EXAMPLE: Disable integration (rollback) when SignalK is absent
         # - command: "/usr/local/bin/disable-signalk"
         #   sudo: true
+        #   continueOnError: true      # Best-effort rollback
         #   onlyIf:
         #     serviceNotInstalled: "signalk"
 
@@ -288,6 +304,14 @@ spec:
         format: "yaml"                          # yaml|ini|json|xml|env|conf|properties|file
         reload: "systemctl restart <service>"   # "none" or a shell command (interpolation allowed)
         reloadSudo: true
+        # Safe write options (recommended on system configs)
+        writeSudo: true                 # Write file with sudo
+        createIfMissing: true           # Create missing file/dirs before write
+        backupSuffix: ".bak"            # Save <file>.bak before overwrite
+        atomicWrite: true               # Write to temp + atomic rename
+        owner: "root"                   # chown after write (optional)
+        group: "root"                   # chgrp after write (optional)
+        mode: "0644"                    # chmod after write (optional)
         description: "Main configuration"
         schema:
           - key: "server.port"
@@ -317,6 +341,11 @@ spec:
         format: "file"
         reload: "none"
         reloadSudo: false
+        # Safe write options also available for raw files:
+        writeSudo: false               # Set true if file requires root to edit
+        createIfMissing: false
+        backupSuffix: ".bak"
+        atomicWrite: true
         description: "Main configuration"
 
   # -----------------------------------------------------------------------------
@@ -331,12 +360,17 @@ spec:
     #   sudo: true
     #   confirm: false
     #   description: "Restart the service"
-
+    #
     # - name: "Backup Config"
     #   command: "/usr/bin/<service>-backup"
     #   sudo: true
     #   confirm: true
     #   description: "Backup configuration and data"
+    #
+    # - name: "Apply Integrations"
+    #   builtin: "reconfigure"            # Runs lifecycle.reconfigure.commands
+    #   confirm: false
+    #   description: "Re-run conditional integration & rollback steps"
 
   # -----------------------------------------------------------------------------
   # links: Helpful URLs shown in UI (e.g., Web UI, Docs).
