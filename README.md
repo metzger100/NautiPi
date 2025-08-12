@@ -6,17 +6,17 @@
 
 ## What is NautiPi and why does it matter?
 
-**NautiPi** is the universal, user-friendly control center for running a Raspberry Pi as a **web-based onboard computer** on sailboats and motorboats. With NautiPi, anyone—whether power user or weekend sailor—can use the Pi as the heart of onboard electronics, manage it, and extend it at any time. NautiPi is focused on **headless, web-based** apps (no Linux desktop). Everything is accessible in the browser—no permanently attached screen, mouse, or keyboard required.
+**NautiPi** is the universal, user-friendly control center for running a Raspberry Pi as a **web-based onboard computer** on sailboats and motorboats. With NautiPi, anyone, whether power user or weekend sailor, can use the Pi as the heart of onboard electronics, manage it, and extend it at any time. NautiPi is focused on **headless, web-based** apps (no Linux desktop). Everything is accessible in the browser; no permanently attached screen, mouse, or keyboard required.
 
 Many crews want modular digitalization without being locked into proprietary all-in-one solutions: navigation, sensor data, weather, music, and more. This is where NautiPi shines:
 
 * **For Users (Sailors):**
-  NautiPi makes getting started with a Pi onboard computer as simple as possible. No Linux knowledge, no complex terminal routines. A setup wizard guides you step by step—from Wi-Fi/hotspot to installing and configuring popular onboard services like AvNav or SignalK. Everything runs directly in the browser.
+  NautiPi makes getting started with a Pi onboard computer as simple as possible. No Linux knowledge, no complex terminal routines. A setup wizard guides you step by step from Wi-Fi/hotspot to installing and configuring popular onboard services like AvNav or SignalK. Everything runs directly in the browser.
 
 * **For Developers:**
   NautiPi is an open, modern, modular framework for integrating and managing marine software. Through standardized, versioned [**YAML descriptors**](https://github.com/metzger100/NautiPi/blob/main/service-template.yaml), new services can be added without forking the core. Plugins behave just like native service YAMLs and can be imported via the WebUI. Clear, up-to-date docs make contributions sustainable.
 
-**Bottom line:** NautiPi aims to make onboard digitalization easy, safe, and independent—benefiting sailors, developers, and the wider community.
+**Bottom line:** NautiPi aims to make onboard digitalization easy, safe, and independent; benefiting sailors, developers, and the wider community.
 
 ---
 
@@ -41,7 +41,7 @@ Many crews want modular digitalization without being locked into proprietary all
 
 ## 🧠 Desired State & Reconciliation (Operator Pattern)
 
-NautiPi persists a **Desired State** (installed services, versions, inputs) in a local store (e.g. SQLite). A background **Reconciler** continuously compares desired vs. actual and **repairs drift** (e.g., restarts services, reapplies config, re-links integrations) in an idempotent manner. This turns one-time install scripts into a **self-healing** system—ideal on boats far from shore support.
+NautiPi persists a **Desired State** (installed services, versions, inputs) in a local store (e.g. SQLite). A background **Reconciler** continuously compares desired vs. actual and **repairs drift** (e.g., restarts services, reapplies config, re-links integrations) in an idempotent manner. This turns one-time install scripts into a **self-healing** system, ideal on boats far from shore support.
 
 ---
 
