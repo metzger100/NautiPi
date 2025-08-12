@@ -14,7 +14,7 @@ Many crews want modular digitalization without being locked into proprietary all
   NautiPi makes getting started with a Pi onboard computer as simple as possible. No Linux knowledge, no complex terminal routines. A setup wizard guides you step by step—from Wi-Fi/hotspot to installing and configuring popular onboard services like AvNav or SignalK. Everything runs directly in the browser.
 
 * **For Developers:**
-  NautiPi is an open, modern, modular framework for integrating and managing marine software. Through standardized, versioned **YAML descriptors**, new services can be added without forking the core. Plugins behave just like native service YAMLs and can be imported via the WebUI. Clear, up-to-date docs make contributions sustainable.
+  NautiPi is an open, modern, modular framework for integrating and managing marine software. Through standardized, versioned [**YAML descriptors**](https://github.com/metzger100/NautiPi/blob/main/service-template.yaml), new services can be added without forking the core. Plugins behave just like native service YAMLs and can be imported via the WebUI. Clear, up-to-date docs make contributions sustainable.
 
 **Bottom line:** NautiPi aims to make onboard digitalization easy, safe, and independent—benefiting sailors, developers, and the wider community.
 
