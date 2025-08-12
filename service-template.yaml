@@ -5,6 +5,10 @@
 # - Declaratively describe how NautiPi installs, configures, runs, checks and links a service.
 # - Keep backend simple: most logic should be CLI commands in lifecycle.*.commands.
 #
+# EXECUTION MODEL
+# - NautiPi runs as a non-root service. Any command with sudo: true triggers a UI sudo prompt once per job.
+# - The sudo credential is verified via PAM, cached in memory for the job only (short TTL), and never persisted.
+#
 # STRING INTERPOLATION
 # - You can reference any user input from `inputs:` in ANY STRING field using: ${inputs.NAME}
 #   Example: "-p ${inputs.SIGNALK_PORT}:3000" or "http://localhost:${inputs.WEB_PORT}/"
@@ -12,8 +16,23 @@
 # - Types: interpolation yields strings; the runner will coerce obvious numeric/boolean fields
 #   (e.g. ports[].port) when possible.
 # - Validation: if an input is `required: true` but missing, the runner will fail with a clear error.
-# - Only add `inputs` that you actually need for install/config (every input becomes UI work which might confuse users).
+# - Only add `inputs` that you actually need for install/config (every input becomes UI work and can confuse users).
 # - inputs[].type: password OR inputs[].secret: true → mask values in logs/UI (e.g., ******).
+#
+# SAFETY
+# - Commands run in a job with streaming logs. Use small, idempotent steps.
+# - Quote/escape user-provided data in commands (the runner applies safe quoting, but be defensive).
+# - Prefer package manager/container images from trusted sources.
+#
+# NETWORKING & HTTP
+# - NautiPi is HTTP-only by design (boats may be offline for months; public CAs unreachable).
+# - Do NOT assume TLS. Links should use http://localhost:PORT or device IP/hostname.
+# - Optional 'spec.network' hints allow the firewall manager to expose ports only to the boat LAN (hotspot/safe networks).
+#   Unsafe uplinks (e.g., marina Wi-Fi) are firewalled from inbound access by default.
+#
+# HEALTH & RECONCILE
+# - 'statusChecks' define readiness/liveness. The reconciler uses these and dependencies to converge on desired state.
+# - 'reconfigure' contains idempotent integration steps (enable/disable) and can be re-run safely.
 # =============================================================================
 
 apiVersion: nautipi.io/v1                   # required – API version (fixed)
@@ -86,51 +105,64 @@ inputs:
 spec:
   category: "<navigation|sensor|system|utility|media|plugin>"   # required – UI grouping
   icon: "<icon-name>"                                           # optional – UI icon identifier (name token)
+
   # -----------------------------------------------------------------------------
-  # lifecycle: How to install/update/remove/configure the service.
+  # network (OPTIONAL): Hints for NautiPi's firewall manager.
+  # - Use to declare which ports should be reachable from the boat LAN (hotspot/safe).
+  # - 'wan' exposure is discouraged; uplink is considered unsafe by default.
+  # -----------------------------------------------------------------------------
+  network:
+    # When true, service should start only when at least one network is online
+    # (hotspot or marked safe LAN). Default: false.
+    dependsOnNetwork: false
+
+    ports:
+      # - port: 3000
+      #   protocol: "tcp"           # tcp | udp
+      #   exposure: "lan"           # lan | wan | both | none
+      #   description: "HTTP UI"
+
+  # -----------------------------------------------------------------------------
+  # lifecycle: How NautiPi installs/updates/removes/configures the service.
   # Each commands[].command is a shell line; set sudo:true if root is needed.
-  # Use ${inputs.NAME} directly in commands.
-  # Make commands IDEMPOTENT where possible (use '|| true', check existence, etc.).
+  # Commands execute inside a job with live logs. Keep them IDEMPOTENT.
   #
-  # CONDITIONAL COMMANDS (onlyIf):
-  # - Add onlyIf to a command to guard it by simple conditions (all are AND-combined):
+  # CONDITIONAL COMMANDS (onlyIf / onlyIfAny):
+  # - Guard steps by conditions (all are AND-combined inside onlyIf):
   #   onlyIf:
-  #     serviceInstalled: "signalk"             # or ["signalk","avnav"] or [{id:"signalk",version:">=2.0.0"}]
-  #     serviceNotInstalled: "mosquitto"        # optional
-  #     fileExists: "/etc/my.conf"              # string OR ["pathA","pathB"] – ALL must exist
-  #     cmd: "test -S /var/run/docker.sock"     # shell returns 0 → true
-  # - You may also use version constraints:
-  #     serviceInstalled:
-  #       - id: "signalk"
-  #         version: ">=2.0.0"                  # Only run if installed AND version matches
-  # - Optional OR support:
-  #     onlyIfAny:                              # Command runs if ANY listed condition passes
-  #       - serviceInstalled: "signalk"
-  #       - serviceInstalled: "avnav"
+  #     serviceInstalled: "signalk"         # or ["signalk","avnav"] or [{id:"signalk",version:">=2.0.0"}]
+  #     serviceNotInstalled: "mosquitto"    # optional
+  #     fileExists: "/etc/my.conf"          # string OR ["pathA","pathB"] – ALL must exist
+  #     cmd: "test -S /var/run/docker.sock" # shell returns 0 → true
+  # - OR logic:
+  #   onlyIfAny:
+  #     - serviceInstalled: "signalk"
+  #     - serviceInstalled: "avnav"
   #
-  # RECONFIGURE STEP (enable/disable integrations & rollback):
-  # - lifecycle.reconfigure.commands holds idempotent integration steps that can be
-  #   * run after initial install,
-  #   * re-run later when optional dependencies appear/disappear,
-  # - Put both "enable" and "disable" sides here using onlyIf.serviceInstalled / serviceNotInstalled if needed.
+  # RECONFIGURE STEP:
+  # - 'reconfigure.commands' holds idempotent integration steps that can be run:
+  #   * after first install,
+  #   * later, whenever optional dependencies appear/disappear.
+  # - Provide both "enable" and "disable" sides using serviceInstalled/serviceNotInstalled.
   #
-  # Per-command robustness:
+  # PER-COMMAND OPTIONS:
   # - timeoutSeconds: <int>        # Kill the command after N seconds (0=no timeout)
   # - continueOnError: true|false  # If true, do not stop the sequence on this command's failure
+  # - sudo: true|false             # If true, UI will prompt once per job
   # -----------------------------------------------------------------------------
   lifecycle:
     preInstall:
       commands:                                # optional – prepare system (repos, deps, docker)
         # - command: "apt-get update"
         #   sudo: true
-        #   timeoutSeconds: 60          # Optional timeout per command
-        #   continueOnError: false      # Continue even if this step fails
+        #   timeoutSeconds: 60
+        #   continueOnError: false
 
     install:
       commands:                                # required – actual installation steps
         - command: "<install command 1>"
           sudo: true
-          # timeoutSeconds: 300         # Example timeout
+          # timeoutSeconds: 300
           # continueOnError: false
         - command: "<install command 2>"
           sudo: true
@@ -151,7 +183,9 @@ spec:
         # - command: "/usr/local/bin/enable-signalk --host 127.0.0.1 --port ${inputs.SIGNALK_PORT}"
         #   sudo: true
         #   onlyIf:
-        #     serviceInstalled: "signalk"
+        #     serviceInstalled:
+        #       - id: "signalk"
+        #         version: ">=2.0.0"
         #
         # --- EXAMPLE: Disable integration (rollback) when SignalK is absent
         # - command: "/usr/local/bin/disable-signalk"
@@ -211,7 +245,7 @@ spec:
       cwd: "<working-directory>"            # optional – working directory
 
     custom:
-      start:                                # if type=custom – define explicit start/stop/status commands
+      start:                                # if type=custom – explicit start/stop/status commands
         - command: "<custom start command>"
           sudo: true
       stop:
@@ -230,6 +264,8 @@ spec:
   # - process: { name }
   # - custom:  { command, expect(regex) }
   # Interpolation works in URLs/hosts/ports (e.g., http://localhost:${inputs.WEB_PORT}/)
+  #
+  # The reconciler uses statusChecks along with dependencies to drive convergence.
   # -----------------------------------------------------------------------------
   statusChecks:
     - type: "systemd"
@@ -246,7 +282,7 @@ spec:
     # - type: "custom"
     #   command: "curl -fsS http://localhost:3000/health"
     #   expect: "ok"
- 
+
   # -----------------------------------------------------------------------------
   # config: (OPTIONAL) – Structured config files + UI editor schema
   #
@@ -262,16 +298,13 @@ spec:
   #       properties: flat "key"
   #       env:       flat "KEY" (KEY=VAL lines)
   #       conf:      flat key=value (like sysconfig) – parser treats as simple map
-  #       xml:       XPath OR simplified path:
-  #                   - "root.child.grandchild" → element text
-  #                   - "root.child@attr"       → attribute
-  #                 (choose one convention for your project; see schema.key)
+  #       xml:       XPath OR simplified "a.b.c" path; use "@attr" for attributes (see schema.key)
   #       file:      raw text editor only (no schema-based fields)
   #   - reload (required): what to do after save
   #       "none" (default), or any shell command to run (e.g., "systemctl restart <svc>").
   #       Interpolation works: "docker restart ${inputs.CONTAINER_NAME}"
   #   - reloadSudo (required): true|false – run the reload command with sudo
-  #   - description (optional): text shown above the editor/form
+  #   - description (optional): shown above the editor/form
   #   - writeSudo/createIfMissing/backupSuffix/atomicWrite/owner/group/mode (optional):
   #       safe write controls for system files (see example below)
   #
@@ -279,11 +312,6 @@ spec:
   # - schema[]: array defining form fields mapped to keys inside the file.
   #   Field:
   #     - key (required): path to value inside the file
-  #         yaml/json:     "server.port", "listeners[0].host"
-  #         ini:           "section.key" or "key"
-  #         properties/env/conf: "KEY"
-  #         xml:           XPath (e.g., "/config/server/port") OR simplified "config.server.port"
-  #                        use "@attr" for attributes, e.g., "server.@port"
   #     - type (required): string | integer | number | boolean | password | select
   #     - required (optional): true/false
   #     - description (optional): help text
@@ -295,7 +323,7 @@ spec:
   #
   # NOTES / LIMITS
   # - Comments in yaml/ini may be lost on write (parser dependent). Use format "file" if preserving exact text matters.
-  # - Arrays: use explicit indices (e.g., "servers[0].port") – MVP supports updating existing indices or creating simple paths.
+  # - Arrays: use explicit indices (e.g., "servers[0].port").
   # - Interpolation applies to all STRING fields (path, reload, defaults, etc.).
   # -----------------------------------------------------------------------------
   config:
@@ -325,8 +353,8 @@ spec:
           # Examples of other field types:
           # - key: "auth.mode"
           #   type: select
-          #   enum: ["none", "basic", "oauth2"]
-          #   enumNames: ["No auth", "Basic Auth", "OAuth 2.0"]
+          #   enum: ["none", "basic"]
+          #   enumNames: ["No auth", "Basic Auth"]
           # - key: "admin.password"
           #   type: password
           #   required: false
@@ -342,13 +370,13 @@ spec:
         reloadSudo: false
         # Safe write options also available for raw files:
         writeSudo: false               # Set true if file requires root to edit
-        description: "Main configuration"
+        description: "Additional configuration"
 
   # -----------------------------------------------------------------------------
   # actions (OPTIONAL):
   # Extra buttons in UI that run commands (backup, reset, etc.).
-  # NOTE: start/stop/restart for systemd/docker are usually handled automatically.
-  # Fields: name, command, sudo, confirm, description, icon
+  # NOTE: start/stop/restart for systemd/docker are handled automatically.
+  # Fields: name, command, sudo, confirm, description, icon, builtin
   # -----------------------------------------------------------------------------
   actions:
     # - name: "Restart Service"
@@ -370,16 +398,17 @@ spec:
 
   # -----------------------------------------------------------------------------
   # links: Helpful URLs shown in UI (e.g., Web UI, Docs).
-  # Use localhost or explicit host:port; the UI may rewrite to the device IP for convenience.
+  # Use localhost or explicit host:port; the UI may rewrite to the device IP.
   # Interpolation works (e.g., http://localhost:${inputs.WEB_PORT}/).
+  # IMPORTANT: NautiPi runs HTTP-only on local networks; do not assume TLS.
   # -----------------------------------------------------------------------------
   links:
     - title: "Web UI"
       url: "http://localhost:3000/"
-      description: "Open the service's web interface"
-      webservice: true       # Link to the webservice itself (major button)
+      description: "Open the service web interface"
+      webservice: true       # Major button to the service itself
     # - title: "Documentation"
-    #   url: "<https://project.docs.url>"
+    #   url: "http://project.docs.url"
     #   description: "Project documentation"
     #   webservice: false
 
@@ -388,7 +417,7 @@ spec:
   # - required: service MUST be present (installer may block until installed).
   # - optional: service enhances functionality if present (no hard block).
   # Version constraints are advisory (semver, e.g., >=1.0.0).
-  # NOTE: Declaration does not auto-install dependencies; it informs UI/flows.
+  # NOTE: Declaration does not auto-install dependencies; it informs UI/flows and health model.
   # -----------------------------------------------------------------------------
   dependsOn:
     required: []   # e.g., [{ id: "database", version: ">=1.0.0" }]
