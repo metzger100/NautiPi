@@ -126,13 +126,10 @@ nautipi/
 │   │   ├── auth.py
 │   │   ├── security.py
 │   │   └── plugin_manager.py
-│   ├── services/
+│   ├── services/                   # built-in descriptors and user-imported descriptors
 │   │   ├── avnav.yml
 │   │   ├── signalk.yml
 │   │   └── ...
-│   ├── registry/
-│   │   ├── core/                   # signed, built-in descriptors
-│   │   └── community/              # user-imported descriptors
 │   ├── api/
 │   │   └── rest_api.py
 │   ├── state.db                    # SQLite (desired state, jobs, events)
@@ -222,7 +219,6 @@ GET  /metrics
 
 * Services are integrated via versioned YAML descriptors (native or third-party).
 * Import plugin YAMLs directly in the WebUI; strict validation (schema + basic safety).
-* Optional signed registry for trusted descriptors (recommended for fleet owners).
 
 ---
 
