@@ -112,44 +112,148 @@ The WebUI shows:
 
 ```plaintext
 nautipi/
-├── backend/
-│   ├── core/
-│   │   ├── installer.py
-│   │   ├── updater.py
-│   │   ├── configurator.py
-│   │   ├── reconciler.py           # desired state loop
-│   │   ├── jobs.py                 # job queue + WS log streaming
-│   │   ├── hotspot.py
-│   │   ├── network.py              # NetworkManager + policies
-│   │   ├── firewall.py             # nftables rules (safe/unsafe)
-│   │   ├── system.py
-│   │   ├── auth.py
-│   │   ├── security.py
-│   │   └── plugin_manager.py
-│   ├── services/                   # built-in descriptors and user-imported descriptors
-│   │   ├── avnav.yml
-│   │   ├── signalk.yml
-│   │   └── ...
-│   ├── api/
-│   │   └── rest_api.py
-│   ├── state.db                    # SQLite (desired state, jobs, events)
-│   ├── main.py
-│   └── logging.py
-│
-├── frontend/
-│   └── webui/
-│       ├── src/
-│       │   ├── lib/
-│       │   │   └── design-system/
-│       │   └── routes/
-│       └── package.json
-│
-├── docs/
-│   └── (Documentation & developer guide, plugin cookbook)
-│
-└── setup/
-    ├── install.sh
-    └── setup.py
+├─ README.md                        # Start here: quickstart, repo map (this file)
+├─ LICENSE
+├─ .editorconfig
+├─ .gitignore
+├─ Makefile                         # Common dev tasks: make dev / test / lint / build
+├─ pyproject.toml                   # Backend tooling (uv, ruff, mypy, pytest)
+├─ package.json                     # WebUI tooling (SvelteKit, Vite, TS)
+
+# ──────────────────────────────────────────────
+# Delivery & ops (build images, systemd, packaging)
+# ──────────────────────────────────────────────
+├─ docker/
+│  ├─ backend.Dockerfile            # FastAPI backend image
+│  └─ webui.Dockerfile              # SvelteKit static build → nginx (or node adapter)
+├─ deploy/
+│  ├─ systemd/
+│  │  ├─ nautipi.service            # Main service (HTTP API + workers)
+│  │  └─ nautipi-reconciler.timer   # Optional periodic reconcile trigger
+│  ├─ packaging/
+│  │  ├─ debian/                    # .deb metadata (optional distro packaging)
+│  │  └─ tarball/                   # Release tarball scripts
+│  └─ firewall/
+│     └─ nftables-template.nft      # Template for LAN/Hotspot policy
+├─ setup/
+│  ├─ install.sh                    # One-liner entrypoint (docs reference this)
+│  ├─ uninstall.sh
+│  └─ first-boot/                   # Boots the "fail-safe hotspot" & captive portal
+│     ├─ enable-hotspot.sh
+│     ├─ captive-portal.service
+│     └─ avahi-captive.service
+├─ scripts/
+│  ├─ dev.sh                        # Local dev orchestration
+│  ├─ lint.sh                       # ruff/mypy/eslint/etc.
+│  ├─ release.sh                    # Version bump + artifact build
+│  └─ collect-support-bundle.sh     # Gathers logs/configs for debugging
+
+# ──────────────────────────────────────────────
+# Docs & specs (drive UI, validation, and contributor workflow)
+# ──────────────────────────────────────────────
+├─ docs/
+│  ├─ index.md                      # Doc landing page
+│  ├─ architecture.md               # Operator model, reconciler, jobs
+│  ├─ api.md                        # Generated from OpenAPI (backend/app.py)
+│  ├─ plugin-cookbook.md            # Write your own service/plugin descriptors
+│  ├─ networking.md                 # Safe networks, hotspot, firewall
+│  └─ security.md                   # Sudo model, allow-list, PAM
+├─ schemas/                         # JSON Schemas used by validator + WebUI forms
+│  ├─ service-descriptor.schema.json
+│  ├─ config-editor.schema.json
+│  └─ state.schema.json
+├─ descriptors/                     # Built-in service descriptors + dev plugins
+│  ├─ native/
+│  │  ├─ avnav.yaml
+│  │  ├─ signalk.yaml
+│  │  ├─ mosquitto.yaml
+│  │  └─ nodered.yaml
+│  └─ plugins/                      # For local development of third-party plugins
+
+# ──────────────────────────────────────────────
+# Backend (FastAPI + operator core)
+# ──────────────────────────────────────────────
+├─ backend/
+│  ├─ nautipi/
+│  │  ├─ __init__.py
+│  │  ├─ app.py                     # FastAPI app factory (OpenAPI source of truth)
+│  │  ├─ api/                       # HTTP surface: 1 file per domain
+│  │  │  ├─ services.py             # /api/services … install/update/configure
+│  │  │  ├─ jobs.py                 # /api/jobs … progress, cancel, logs
+│  │  │  ├─ logs.py                 # /api/logs … live tail via WS
+│  │  │  ├─ sudo.py                 # /api/sudo … job-scoped elevation
+│  │  │  ├─ state.py                # /api/state … desired state apply
+│  │  │  ├─ network.py              # /api/network … connect, mark-safe, hotspot policy
+│  │  │  ├─ selfupdate.py           # /api/selfupdate … signed updates
+│  │  │  └─ metrics.py              # /metrics … Prometheus
+│  │  ├─ core/                      # Business logic used by routers
+│  │  │  ├─ db.py                   # SQLite + migrations
+│  │  │  ├─ models.py               # Pydantic models (shared types)
+│  │  │  ├─ jobs.py                 # Job queue & lifecycle (queued → running → done)
+│  │  │  ├─ runner.py               # Command runner (sudo-aware, streaming logs)
+│  │  │  ├─ reconcilers/            # Operator loop to reach desired state
+│  │  │  │  ├─ desired_state.py     # Converge services, apply drift repairs
+│  │  │  │  └─ health.py            # Status checks (systemd/http/tcp/custom)
+│  │  │  ├─ sudo.py                 # PAM verify + allow-list checks
+│  │  │  ├─ security.py             # Auth, rate limiting, lockouts
+│  │  │  ├─ descriptors.py          # YAML loader + JSON-schema validation
+│  │  │  ├─ network.py              # NetworkManager policy (safe vs uplink), hotspot
+│  │  │  └─ firewall.py             # nftables generator (LAN exposure hints)
+│  │  ├─ adapters/                  # Thin wrappers over system services
+│  │  │  ├─ systemd.py              # start/stop/status for units
+│  │  │  ├─ docker.py               # docker run/pull/restart helpers
+│  │  │  ├─ compose.py              # docker-compose integration (if used)
+│  │  │  └─ logs.py                 # journalctl tail, file tails
+│  │  ├─ resources/
+│  │  │  ├─ allowlist-sudo.json     # Allowed root commands (tight surface)
+│  │  │  └─ compose-templates/      # Optional templated compose snippets
+│  │  └─ cli.py                     # `nautipi` admin CLI (diag, snapshot, bundle)
+│  └─ tests/                        # pytest (unit + integration)
+│     ├─ test_descriptors.py
+│     ├─ test_runner.py
+│     ├─ test_reconciler.py
+│     └─ test_api.py
+
+# ──────────────────────────────────────────────
+# Web UI (SvelteKit, offline-friendly)
+# ──────────────────────────────────────────────
+├─ webui/
+│  ├─ src/
+│  │  ├─ app.d.ts
+│  │  ├─ routes/
+│  │  │  ├─ +layout.svelte          # Shell, toasts, theme, i18n loading
+│  │  │  ├─ +layout.ts
+│  │  │  ├─ +page.svelte            # Dashboard
+│  │  │  ├─ wizard/                 # First-run flow (Wi-Fi, hotspot, users, SSH, updates)
+│  │  │  ├─ services/               # Install/manage from YAML descriptors
+│  │  │  ├─ jobs/                   # Live progress + logs
+│  │  │  ├─ network/                # Safe networks, hotspot policy
+│  │  │  ├─ logs/                   # Systemd tails
+│  │  │  ├─ state/                  # Desired state import/export
+│  │  │  └─ settings/               # Auth, updates, snapshots
+│  │  ├─ lib/
+│  │  │  ├─ api/                    # TS client (generated from OpenAPI)
+│  │  │  ├─ components/             # Cards, AutoForm (JSON-schema → form), SudoPrompt, etc.
+│  │  │  ├─ stores/                 # jobs store, toasts
+│  │  │  └─ i18n/                   # de/en bundles
+│  │  ├─ params/
+│  │  └─ hooks.client.ts
+│  ├─ static/
+│  │  ├─ icon.png
+│  │  └─ offline/                   # Assets for marina-offline use
+│  ├─ svelte.config.js
+│  ├─ vite.config.ts
+│  └─ tailwind.config.js
+
+# ──────────────────────────────────────────────
+# Runtime data on the device (NOT in container images)
+# ──────────────────────────────────────────────
+└─ var/                              # Mounted at /opt/nautipi/var on the Pi
+   ├─ state.sqlite                   # Desired state + jobs + events
+   ├─ descriptors/                   # Merged built-ins + imported plugins
+   ├─ snapshots/                     # Config snapshot export/import
+   ├─ support-bundles/               # Archives from support-bundle script
+   └─ logs/                          # Service + job logs
 ```
 
 ---
