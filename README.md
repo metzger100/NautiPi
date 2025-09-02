@@ -121,11 +121,8 @@ nautipi/
 ├─ package.json                     # WebUI tooling (SvelteKit, Vite, TS)
 
 # ──────────────────────────────────────────────
-# Delivery & ops (build images, systemd, packaging)
+# Delivery & ops
 # ──────────────────────────────────────────────
-├─ docker/
-│  ├─ backend.Dockerfile            # FastAPI backend image
-│  └─ webui.Dockerfile              # SvelteKit static build → nginx (or node adapter)
 ├─ deploy/
 │  ├─ systemd/
 │  │  ├─ nautipi.service            # Main service (HTTP API + workers)
@@ -199,20 +196,11 @@ nautipi/
 │  │  │  ├─ descriptors.py          # YAML loader + JSON-schema validation
 │  │  │  ├─ network.py              # NetworkManager policy (safe vs uplink), hotspot
 │  │  │  └─ firewall.py             # nftables generator (LAN exposure hints)
-│  │  ├─ adapters/                  # Thin wrappers over system services
-│  │  │  ├─ systemd.py              # start/stop/status for units
-│  │  │  ├─ docker.py               # docker run/pull/restart helpers
-│  │  │  ├─ compose.py              # docker-compose integration (if used)
-│  │  │  └─ logs.py                 # journalctl tail, file tails
-│  │  ├─ resources/
-│  │  │  ├─ allowlist-sudo.json     # Allowed root commands (tight surface)
-│  │  │  └─ compose-templates/      # Optional templated compose snippets
-│  │  └─ cli.py                     # `nautipi` admin CLI (diag, snapshot, bundle)
-│  └─ tests/                        # pytest (unit + integration)
-│     ├─ test_descriptors.py
-│     ├─ test_runner.py
-│     ├─ test_reconciler.py
-│     └─ test_api.py
+│  │  └─ adapters/                  # Thin wrappers over system services
+│  │     ├─ systemd.py              # start/stop/status for units
+│  │     ├─ docker.py               # docker run/pull/restart helpers
+│  │     ├─ compose.py              # docker-compose integration (if used)
+│  │     └─ logs.py                 # journalctl tail, file tails
 
 # ──────────────────────────────────────────────
 # Web UI (SvelteKit, offline-friendly)
@@ -240,17 +228,16 @@ nautipi/
 │  │  └─ hooks.client.ts
 │  ├─ static/
 │  │  ├─ icon.png
-│  │  └─ offline/                   # Assets for marina-offline use
+│  │  └─ offline/                   # Assets for offline use
 │  ├─ svelte.config.js
 │  ├─ vite.config.ts
 │  └─ tailwind.config.js
 
 # ──────────────────────────────────────────────
-# Runtime data on the device (NOT in container images)
+# Runtime data on the device
 # ──────────────────────────────────────────────
 └─ var/                              # Mounted at /opt/nautipi/var on the Pi
    ├─ state.sqlite                   # Desired state + jobs + events
-   ├─ descriptors/                   # Merged built-ins + imported plugins
    ├─ snapshots/                     # Config snapshot export/import
    ├─ support-bundles/               # Archives from support-bundle script
    └─ logs/                          # Service + job logs
